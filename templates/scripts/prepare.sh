@@ -10,7 +10,7 @@
 
 # Function to determine if running in CI environment
 is_ci_environment() {
-  # Check for common CI environment variables
+  # Check common CI environment variables
   [ -n "$CI" ] ||             # Generic CI environment variable
   [ -n "$GITHUB_ACTIONS" ] || # GitHub Actions
   [ -n "$GITLAB_CI" ] ||      # GitLab CI
@@ -26,9 +26,17 @@ main() {
     exit 0
   fi
 
+  if lefthook check-install ; then
+    echo "lefthook is already installed."
+    exit 0
+  fi
+
   echo "Local development environment detected. "
-  # Setup for local environment
+  # Setup for local development environment
   lefthook install
+  # remember bd hooks must set Git config set: core.hooksPath=.beads-hooks
+  # bd hooks install --chain  --shared --no-daemon
+
 }
 
 main

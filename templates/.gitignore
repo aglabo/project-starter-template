@@ -31,6 +31,12 @@ $~*
 *swp
 *lock
 
+# session files
+*session.json
+*session
+**/*session.json
+**/*session
+
 # .env files
 .env*
 .env.*

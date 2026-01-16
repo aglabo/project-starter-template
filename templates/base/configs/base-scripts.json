@@ -1,8 +1,7 @@
 {
-  "_comment": "@(#) : Shared base script definitions for ESTA packages",
+  "_comment": "@(#) : sub repository scripts templates: base-scripts.json",
   "scripts": {
-    "prepare": "bash ./scripts/prepare.sh"
-    "build": "pnpm exec tsup --config ./configs/tsup.config.ts",
+    "prepare": "bash ./scripts/prepare.sh",
     "clean": "pnpm rimraf dist module .cache",
     "format:dprint": "dprint fmt",
     "check:dprint": "dprint check",
