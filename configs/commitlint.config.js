@@ -1,5 +1,5 @@
 // src: configs/commitlint.config.js
-// @(#) : commitlint basic configs
+// @(#) : commitlint 基本設定
 //
 // Copyright (c) 2025 atsushifx <http://github.com/atsushifx>
 //
@@ -37,4 +37,4 @@ const baseConfig = {
 };
 
 // export
-export default baseConfig;
+module.exports = baseConfig;
