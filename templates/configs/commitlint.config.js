@@ -12,7 +12,7 @@
 // import base Config
 import { default as baseConfig } from '../base/configs/commitlint.config.base.js';
 
-const config = {
+module.exports = {
   ...baseConfig,
   rules: {
     ...baseConfig.rules,
@@ -20,6 +20,3 @@ const config = {
     // 'header-max-length': [2, 'always', 72], etc
   },
 };
-
-// export
-export default config;
