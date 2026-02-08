@@ -65,6 +65,13 @@ tmp/
 **/tmp/
 
 
+## Development tools (installed locally)
+.tools/
+
+# lock file
+pnpm*lock.yaml
+
+
 ##  Editor
 #   VSCode
 .vscode/*
