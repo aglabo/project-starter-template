@@ -16,7 +16,7 @@
     "url": "https://github.com/atsushifx/project-starter-template.git"
   },
   "scripts": {
-    "prepare": "bash ./scripts/setup-dev-env.sh"
+    "prepare": "bash ./scripts/setup-dev-env.sh",
     "scan:secrets": "gitleaks dir --config ./configs/gitleaks.toml . && secretlint --secretlintrc ./configs/secretlint.config.yaml **/*",
     "format:dprint": "dprint fmt",
     "check:dprint": "dprint check",
@@ -24,7 +24,5 @@
     "lint:text": "pnpm exec textlint --config ./configs/textlintrc.yaml --cache --cache-location .cache/textlintcache ",
     "lint:markdown": "pnpm exec markdownlint-cli2 --config ./configs/.markdownlint.yaml ",
     "test:sh": "bash scripts/run-specs.sh --default-path "
-
   }
-
 }
