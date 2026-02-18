@@ -2,7 +2,7 @@
 # src: ./scripts/run-specs.sh
 # @(#) : shellspec runner
 #
-# Copyright (c) 2025 atsushifx <https://github.com/atsushifx>
+# Copyright (c) 2025- atsushifx <https://github.com/atsushifx>
 #
 # This software is released under the MIT License.
 # https://opensource.org/licenses/MIT
@@ -31,10 +31,9 @@ main() {
 
   # Normalize path separators (\ → /) for Windows compatibility
   # Windows paths with backslashes need conversion for bash/Unix tools
-  normalized_args=()
-  for arg in "$@"; do
-    normalized_args+=("${arg//\\//}")
-  done
+  # Using Bash array expansion to normalize all arguments in one pass (no need for multiple variable references)
+  local -a args=("$@")
+  normalized_args=("${args[@]//\\//}")
 
   # Run ShellSpec from project root using subshell
   # Subshell ensures caller's directory remains unchanged

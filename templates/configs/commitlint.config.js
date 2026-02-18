@@ -1,22 +1,16 @@
-// src: configs/commitlint.config.ts
-// @(#) : commitlint configuration for this workspace
+// src: configs/commitlint.config.js
+// @(#) : commitlint basic configuration
 //
-// Copyright (c) 2025 atsushifx <https://github.com/atsushifx>
+// Copyright (c) 2025- atsushifx <http://github.com/atsushifx>
 //
 // This software is released under the MIT License.
 // https://opensource.org/licenses/MIT
 
 // type check for typescript
-// import commitlint config type
 
-// import base Config
-import { default as baseConfig } from '../base/configs/commitlint.config.base.js';
-
+// commit lint common configs
 module.exports = {
-  ...baseConfig,
+  extends: ['../base/configs/commitlint.config.base.js'],
   rules: {
-    ...baseConfig.rules,
-    // write rules if necessary
-    // 'header-max-length': [2, 'always', 72], etc
   },
 };
