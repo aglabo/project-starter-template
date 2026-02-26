@@ -271,14 +271,6 @@ function Install-WritingEnvironment {
     Write-Host "Installing textlint packages..." -ForegroundColor Cyan
     $TextlintPackages | Install-PnpmPackages
 
-    # Copy configuration files if template exists
-    if (Test-Path $TemplateDir) {
-        Write-Host "Copying configuration files..." -ForegroundColor Cyan
-        $ConfigFilesToCopy | Copy-LinterConfigs -TemplateDir $TemplateDir -DestinationDir $DestinationDir
-    } else {
-        Write-Host "[Warning] Template directory not found: $TemplateDir. Skipping config copy." -ForegroundColor Yellow
-    }
-
     Write-Host "[OK] Writer environment setup completed." -ForegroundColor Green
 }
 

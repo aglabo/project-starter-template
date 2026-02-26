@@ -1,32 +1,10 @@
-# src: /scripts/install-dev-tools.ps1
-# @(#) : Development tools installation script
+# src: ./scripts/in
+# @(#) :
 #
-# Copyright (c) 2025 Furukawa Atsushi <atsushifx@gmail.com>
-# Released under the MIT License.
+# Copyright (c) 2025- atsushifx <https://github.com/atsushifx>
+#
+# This software is released under the MIT License.
 # https://opensource.org/licenses/MIT
-#
-# @file install-dev-tools.ps1
-# @brief Install development support tools in batch
-# @description
-#   Automatically installs multiple development support tools using package managers
-#   (winget, scoop, pnpm, eget) to streamline development environment setup.
-#
-#   Features:
-#   - Batch installation of multiple tools across different package managers
-#   - Automatic fallback installation of eget if not available
-#   - Organized tool list by package manager type
-#   - Error handling and validation
-#
-# @example
-#   .\install-dev-tools.ps1
-#   # Installs all configured development tools
-#
-# @exitcode 0 Success
-# @exitcode 1 Error during installation
-#
-# @author atsushifx
-# @version 1.3.2
-# @license MIT
 
 <#
 .SYNOPSIS
@@ -42,7 +20,6 @@
     2. Install winget packages
     3. Install scoop packages
     4. Install pnpm packages
-    5. Install eget packages
 
 .NOTES
     @Version  1.3.2
@@ -58,7 +35,7 @@
 Set-StrictMode -Version Latest
 
 . "$PSScriptRoot/common/init.ps1"
-. "$SCRIPT_ROOT/libs/AgInstaller.ps1"
+. "$LIBS_DIR/AgInstaller.ps1"
 
 # ============================================================================
 # Configuration
@@ -69,7 +46,21 @@ Set-StrictMode -Version Latest
 # @var array of package specifications (packageName, packageId)
 $WinGetPackages = @(
     # Environment variable manager for managing .env files
-    "dotenvx, dotenvx.dotenvx"
+    # "dotenvx, dotenvx.dotenvx"
+
+    # Shell Development
+    "shellcheck, koalaman.shellcheck",
+
+    ## AI Agent
+    "claude, Anthropic.ClaudeCode",
+    "codex, OpenAI.Codex",
+    "copilot, GitHub.Copilot",
+    "opencode, SST.OpenCode",
+
+    ## Dev Utils
+    "gh, GitHub.cli",
+    "orhun.git-cliff",
+    "jq, jqLang.jq"
 )
 
 ##
@@ -81,8 +72,14 @@ $ScoopPackages = @(
     # Code formatter supporting multiple languages
     "dprint",
     # Secret information scanner to detect credentials in code
-    "gitleaks"
+    "gitleaks",
+
+    "actionlint",
+    "ghalint"
 )
+
+## ShellSpec install directory (relative to project root)
+$ShellSpecInstallDir = ".tools/shellspec"
 
 ##
 # @description npm packages to install via pnpm
@@ -101,20 +98,38 @@ $PnpmPackages = @(
     # Spell checker for code and documentation
     "cspell",
 
-    # AI agent - Claude Code CLI for AI-assisted development
-    "@anthropic/claude-code",
-)
-
-##
-# @description Eget packages to install
-# @var array of eget package specifications (packageName, gitHubRepo)
-$EgetPackages = @(
-    "codegpt, appleboy/codegpt"
+    # Parallel command runner
+    "concurrently"
 )
 
 # ============================================================================
 # Functions
 # ============================================================================
+
+##
+# @description Install shellspec via git clone
+# @details Shallow-clones shellspec repository to install directory if not already installed
+# @param [string] $InstallDir  Path to install directory (default: $ShellSpecInstallDir)
+# @return void
+function Install-ShellSpec {
+    param(
+        [string]$InstallDir = $ShellSpecInstallDir
+    )
+
+    if (Test-Path "$InstallDir/shellspec") {
+        Write-Host "  shellspec is already installed in $InstallDir" -ForegroundColor Yellow
+        return
+    }
+
+    Write-Host "  Installing shellspec to $InstallDir..." -ForegroundColor Cyan
+    try {
+        git clone --depth 1 https://github.com/shellspec/shellspec.git $InstallDir 2>$null
+        Write-Host "  shellspec installed successfully to $InstallDir" -ForegroundColor Green
+    }
+    catch {
+        Write-Warning "shellspec installation failed: $_"
+    }
+}
 
 ##
 # @description Install development tools using configured package managers
@@ -128,15 +143,9 @@ $EgetPackages = @(
 # @global $WinGetPackages Array of winget packages to install
 # @global $ScoopPackages Array of scoop packages to install
 # @global $PnpmPackages Array of pnpm packages to install
-# @global $EgetPackages Array of eget packages to install
 # @example
 #   Install-DevelopmentTools
 function Install-DevelopmentTools {
-    if (!(commandExists "eget")) {
-        Write-Warning "eget is not installed."
-        Install-WinGetPackages "eget,ZacharyYedidia.Eget"
-    }
-
     # Install packages from each package manager
     Write-Host "Installing WinGet packages..." -ForegroundColor Cyan
     $WinGetPackages | Install-WinGetPackages
@@ -147,8 +156,8 @@ function Install-DevelopmentTools {
     Write-Host "Installing pnpm packages..." -ForegroundColor Cyan
     $PnpmPackages | Install-PnpmPackages
 
-    Write-Host "Installing Eget packages..." -ForegroundColor Cyan
-    $EgetPackages | Install-EgetPackages
+    Write-Host "Installing git-based tools..." -ForegroundColor Cyan
+    Install-ShellSpec
 }
 
 # ============================================================================

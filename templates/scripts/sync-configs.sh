@@ -2,7 +2,7 @@
 ## src: ./scripts/sync-configs.sh
 # @(#) : Sync shared config files into target directory (by type)
 #
-# Copyright (c) 2025 atsushifx <http://github.com/atsushifx>
+# Copyright (c) 2025- atsushifx <http://github.com/atsushifx>
 #
 # This software is released under the MIT License.
 # https://opensource.org/licenses/MIT
@@ -94,7 +94,7 @@ main() {
 
   # Display usage and exit if no arguments or --help/-h is provided
   if [[ -z "$target_dir" || -z "$config_type" || "$target_dir" == "--help" || "$target_dir" == "-h" ]]; then
- 	  print_usage
+      print_usage
     exit 0
   fi
 
