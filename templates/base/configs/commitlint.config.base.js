@@ -33,7 +33,7 @@ const baseConfig = {
       'deps', // (custom) Updating third-party dependencies (npm/yarn/etc.)
     ]],
     'subject-case': [2, 'never', ['start-case', 'pascal-case']], // etc
-    'header-max-length': [2, 'always', 72],
+    'header-max-length': [2, 'always', 76],
   },
 };
 
