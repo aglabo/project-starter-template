@@ -25,6 +25,7 @@ Init-ScriptEnvironment
 #>
 function Init-ScriptEnvironment {
     $scriptRoot = Split-Path -Parent $PSScriptRoot
+    $libsDir    = Join-Path $scriptRoot "libs"
 
     if (-not (Get-Variable -Name "SCRIPT_ROOT" -Scope Script -ErrorAction SilentlyContinue)) {
         Set-Variable -Name "SCRIPT_ROOT" `
@@ -32,8 +33,15 @@ function Init-ScriptEnvironment {
                      -Scope Script `
                      -Option ReadOnly
     }
+
+    if (-not (Get-Variable -Name "LIBS_DIR" -Scope Script -ErrorAction SilentlyContinue)) {
+        Set-Variable -Name "LIBS_DIR" `
+                     -Value $libsDir `
+                     -Scope Script `
+                     -Option ReadOnly
+    }
 }
 
 ## 初期設定
 Init-ScriptEnvironment
-. "$SCRIPT_ROOT/common/CommonFunctions.ps1"
+
