@@ -11,6 +11,5 @@
 // commit lint common configs
 module.exports = {
   extends: ['../base/configs/commitlint.config.base.js'],
-  rules: {
-  },
+  rules: {},
 };

@@ -1,5 +1,5 @@
 {
-   "name": "protect-default",
+  "name": "protect-default",
   "target": "branch",
   "source_type": "Repository",
   "source": "aglabo/project-starter-template",

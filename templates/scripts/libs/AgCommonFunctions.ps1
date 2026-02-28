@@ -1,5 +1,5 @@
 # src: /scripts/common/CommonFunctions.ps1
-# @(#) : 共通関数ライブラリ
+# @(#) : Common functions library
 #
 # Copyright (c) 2025- Furukawa Atsushi <atsushifx@gmail.com>
 #

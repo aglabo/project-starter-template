@@ -49,11 +49,11 @@ function mergeScripts(
 
 function updatePackageJson(targetPath: string, updatedPkg: Record<string, any>): void {
   if (IS_DRY_RUN) {
-    console.log('Ô˝zµÅMerged scripts (dry-run):');
+    console.log('Merged scripts (dry-run):');
     console.log(JSON.stringify(updatedPkg.scripts, null, 2));
   } else {
     fs.writeFileSync(targetPath, JSON.stringify(updatedPkg, null, 2) + '\n');
-    console.log('·˙s?package.json updated:', targetPath);
+    console.log('package.json updated:', targetPath);
   }
 }
 
@@ -62,7 +62,7 @@ function validateTargetDir(targetDir: string, repoRoot: string): void {
   const normalizedRoot = path.resolve(repoRoot);
 
   if (normalizedTarget === normalizedRoot) {
-    throw new Error(`Ô˝}é© Refusing to write to project root: ${normalizedTarget}`);
+    throw new Error(`Refusing to write to project root: ${normalizedTarget}`);
   }
 }
 function syncScripts(targetDir: string, repoRoot: string): void {
@@ -77,9 +77,9 @@ function syncScripts(targetDir: string, repoRoot: string): void {
     throw new Error("Missing 'scripts' field in base-scripts.json");
   }
 
-  console.log(`Ô˝zE Syncing scripts to: ${targetPkgPath}`);
+  console.log(`Syncing scripts to: ${targetPkgPath}`);
   if (IS_DRY_RUN) {
-    console.log('Ô˝}é© Dry run mode is active. No changes will be written.');
+    console.log('Dry run mode is active. No changes will be written.');
   }
 
   // pkgJson.scripts = mergeScripts(pkgJson.scripts ?? {}, baseScripts);
@@ -92,7 +92,7 @@ function main() {
   const [targetDir, repoRoot, maybeDryRun] = args;
 
   if (!targetDir || !repoRoot) {
-    console.error('·˚v€∂sage: tsx sync-package-scripts.ts <target_dir> <repo_root> [--dry-run]');
+    console.error('Usage: tsx sync-package-scripts.ts <target_dir> <repo_root> [--dry-run]');
     process.exit(1);
   }
 
@@ -103,7 +103,7 @@ function main() {
   try {
     syncScripts(targetDir, repoRoot);
   } catch (err) {
-    console.error('·˚v€¶rror:', (err as Error).message);
+    console.error('Error:', (err as Error).message);
     process.exit(1);
   }
 }
