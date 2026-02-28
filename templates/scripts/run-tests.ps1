@@ -1,7 +1,7 @@
 # src: /src/run-scripts-tests.ps1
 # @(#) : powershell pester test runner
 #
-# Copyright (c) 2025 Furukawa Atsushi <atsushifx@gmail.com>
+# Copyright (c) 2025- Furukawa Atsushi <atsushifx@gmail.com>
 # Released under MIT License.
 
 <#
@@ -34,7 +34,7 @@ function Get-TestFiles {
     )
     Get-ChildItem -Path $Path -Recurse -Include *.Tests.ps1 -File |
         Where-Object {
-            # 除外条件: ディレクトリパス内に '#～' を含まない
+            # Exclude: directory path must not contain '#~'
             $_.DirectoryName -notmatch '\\#' -and
             $_.Name -notmatch '^#'
         }

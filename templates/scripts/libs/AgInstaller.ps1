@@ -1,15 +1,15 @@
 # src: /scripts/libs/AgInstaller.ps1
-# @(#) : パッケージインストーラーライブラリ
+# @(#) : Package installer library
 #
-# Copyright (c) 2025 Furukawa Atsushi <atsushifx@gmail.com>
+# Copyright (c) 2025- Furukawa Atsushi <atsushifx@gmail.com>
 # Released under the MIT License.
 
 <#
 .SYNOPSIS
-    eget用パラメータを生成します。
+    Generates parameters for eget.
 
 .DESCRIPTION
-    "name,repo"形式の文字列を受け取り、egetに渡すパラメータ（--to, リポジトリ名, --asset）を返します。
+    Accepts a "name,repo" format string and returns parameters to pass to eget (--to, repository name, --asset).
 #>
 function AgInstaller-EgetBuildParams {
     param (
@@ -22,10 +22,10 @@ function AgInstaller-EgetBuildParams {
 
 <#
 .SYNOPSIS
-    winget用パラメータを生成します。
+    Generates parameters for winget.
 
 .DESCRIPTION
-    "name,id"形式の文字列を受け取り、winget installに渡す `--id` と `--location` を返します。
+    Accepts a "name,id" format string and returns --id and --location arguments to pass to winget install.
 #>
 function AgInstaller-WinGetBuildParams {
     [CmdletBinding()]
@@ -39,13 +39,13 @@ function AgInstaller-WinGetBuildParams {
 
 <#
 .SYNOPSIS
-    winget経由でパッケージを一括インストールします。
+    Installs packages in batch via winget.
 
 .DESCRIPTION
-    "name,id"形式のパッケージを、パイプまたは引数で受け取り、wingetで順にインストールします。
+    Accepts "name,id" format packages via pipeline or argument and installs them sequentially with winget.
 
 .PARAMETER Packages
-    パッケージ名とwinget IDのペア文字列（例: "git,Git.Git"）
+    Package name and winget ID pair string (e.g., "git,Git.Git")
 
 .EXAMPLE
     Install-WinGetPackages -Packages @("git,Git.Git")
@@ -80,7 +80,7 @@ function Install-WinGetPackages {
             try {
                 Start-Process "winget" -ArgumentList $args2 -Wait -NoNewWindow -ErrorAction Stop
             } catch {
-                Write-Warning "❌ インストールに失敗しました: $pkg"
+                Write-Warning "Failed to install: $pkg"
             }
         }
         Write-Host "✅ winget packages installed." -ForegroundColor Green
@@ -89,14 +89,13 @@ function Install-WinGetPackages {
 
 <#
 .SYNOPSIS
-    Scoopでツールをインストールします。
+    Installs tools via Scoop.
 
 .DESCRIPTION
-    引数またはパイプで渡されたツール名を Scoop 経由でインストールします。
-    コメント行（#）はスキップされます。
+    Installs tool names passed via pipeline or argument using Scoop. Comment lines (#) are skipped.
 
 .PARAMETER Tools
-    インストール対象のツール名
+    Tool names to install
 
 .EXAMPLE
     Install-ScoopPackages -Tools @("git", "dprint")
@@ -134,13 +133,13 @@ function Install-ScoopPackages {
 
 <#
 .SYNOPSIS
-    pnpmで開発用パッケージをグローバルにインストールします。
+    Installs development packages globally via pnpm.
 
 .DESCRIPTION
-    コメント除去後のパッケージを `pnpm add --global` で一括インストールします。
+    Installs packages in batch via pnpm add --global after removing comment lines.
 
 .PARAMETER Packages
-    パッケージ名の文字列または配列
+    Package name string or array
 
 .EXAMPLE
     Install-PnpmPackages -Packages @("cspell", "secretlint")
@@ -177,13 +176,13 @@ function Install-PnpmPackages {
 
 <#
 .SYNOPSIS
-    egetでGitHubリリースからバイナリを取得してインストールします。
+    Downloads and installs binaries from GitHub releases using eget.
 
 .DESCRIPTION
-    "name,repo"形式のパッケージをパイプまたは引数で渡し、egetを使って `.exe` をDL・保存します。
+    Accepts "name,repo" format packages via pipeline or argument, and downloads/saves .exe files using eget.
 
 .PARAMETER Packages
-    パッケージ名とGitHubリポジトリ名のペア（例: "codegpt,appleboy/codegpt"）
+    Package name and GitHub repository name pair (e.g., "codegpt,appleboy/codegpt")
 
 .EXAMPLE
     Install-EgetPackages -Packages @("dprint,dprint/dprint")
@@ -217,7 +216,7 @@ function Install-EgetPackages {
             try {
                 Start-Process "eget" -ArgumentList $args -Wait -NoNewWindow -ErrorAction Stop
             } catch {
-                Write-Warning "❌ インストールに失敗しました: $pkg"
+                Write-Warning "Failed to install: $pkg"
             }
         }
         Write-Host "✅ eget packages installed." -ForegroundColor Green

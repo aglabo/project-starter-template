@@ -1,29 +1,28 @@
 # src: scripts/libs/AgDevMode.ps1
-# @(#): 開発者モード 設定/取得ライブラリ
+# @(#): Developer mode configuration/retrieval library
 #
-# Copyright (c) 2025 Furukawa Atsushi <atsushifx@gmail.com>
+# Copyright (c) 2025- Furukawa Atsushi <atsushifx@gmail.com>
 # Released under MIT License.
 
-## 定数定義
+## Constants
 Set-Variable -Name "DEVMODE_REGPATH" -Option Constant -Value "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\AppModelUnlock"
 Set-Variable -Name "DEVMODE_VALUE_NAME" -Option Constant -Value "AllowDevelopmentWithoutDevLicense"
 
-## モード取得
+## Get mode
 function AgDevMode-GetMode {
 <#
 .SYNOPSIS
-    Windowsの開発者モードの有効/無効状態を取得します。
+    Gets the enabled/disabled state of Windows Developer Mode.
 
 .DESCRIPTION
-    レジストリ "AppModelUnlock" キーの "AllowDevelopmentWithoutDevLicense" 値を参照して、
-    開発者モードが有効かどうかをブール値で返します。
+    Reads the "AllowDevelopmentWithoutDevLicense" value from the "AppModelUnlock" registry key and returns a boolean indicating whether Developer Mode is enabled.
 
 .EXAMPLE
     PS> AgDevMode-GetMode
     True
 
 .NOTES
-    定数: $DEVMODE_REGPATH, $DEVMODE_VALUE_NAME を使用
+    Uses constants: $DEVMODE_REGPATH, $DEVMODE_VALUE_NAME
 #>
     try {
         $value = Get-ItemProperty -Path $DEVMODE_REGPATH -Name $DEVMODE_VALUE_NAME -ErrorAction Stop
@@ -33,25 +32,23 @@ function AgDevMode-GetMode {
     }
 }
 
-## モード設定
+## Set mode
 function AgDevMode-SetMode {
 <#
 .SYNOPSIS
-    Windowsの開発者モードを有効または無効に設定します。
+    Enables or disables Windows Developer Mode.
 
 .DESCRIPTION
-    レジストリ "AppModelUnlock" キーの "AllowDevelopmentWithoutDevLicense" を 1 または 0 に設定します。
-    必要に応じてレジストリキーの新規作成も行います。
+    Sets the "AllowDevelopmentWithoutDevLicense" value in the "AppModelUnlock" registry key to 1 or 0. Creates the registry key if it does not exist.
 
 .PARAMETER Enable
-    開発者モードを有効にするには -Enable を指定してください。
-    指定しない場合、既定で有効になります。無効化するには -Enable:$false を指定します。
+    Specify -Enable to enable Developer Mode. Defaults to enabled if not specified. Use -Enable:$false to disable.
 
 .EXAMPLE
     PS> AgDevMode-SetMode -Enable:$false
 
 .NOTES
-    定数: $DEVMODE_REGPATH, $DEVMODE_VALUE_NAME を使用
+    Uses constants: $DEVMODE_REGPATH, $DEVMODE_VALUE_NAME
 #>
     param(
         [switch]$Enable = $true
