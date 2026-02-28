@@ -2,7 +2,7 @@
 # src: ./scripts/prepare-commit-msg.sh
 # @(#) : Prepare commit message using Codex CLI
 #
-# Copyright (c) 2025- atsushifx <http://github.com/atsushifx>
+# Copyright (c) 2025 atsushifx <http://github.com/atsushifx>
 #
 # This software is released under the MIT License.
 # https://opensource.org/licenses/MIT
@@ -29,7 +29,7 @@
 #   Features:
 #   - Conventional Commits format compliance
 #   - Context-aware message generation
-#   - Dual output modes: stdout or Git buffer
+#   - Dual output modes: stdout or file output
 #   - Skips if existing message detected (hook mode)
 #   - Safe failure: markers not found → error exit
 #
@@ -38,16 +38,16 @@
 #   prepare-commit-msg.sh
 #
 #   # Output to Git commit buffer (hook mode)
-#   prepare-commit-msg.sh --git-buffer
+#   prepare-commit-msg.sh --output .git/COMMIT_EDITMSG
 #
 #   # Use specific AI model
-#   prepare-commit-msg.sh --git-buffer --model claude-sonnet-4-5
+#   prepare-commit-msg.sh --output .git/COMMIT_EDITMSG --model claude-sonnet-4-5
 #
 # @exitcode 0 Success or skipped (existing message found)
 # @exitcode 1 Error during generation (AI output invalid, markers missing, etc.)
 #
 # @author atsushifx
-# @version 1.2.2
+# @version 1.3.0
 # @license MIT
 
 set -euo pipefail
@@ -71,12 +71,8 @@ readonly SCRIPT_DIR
 # ============================================================================
 
 ##
-# @description Git commit message file path (default: .git/COMMIT_EDITMSG)
-GIT_COMMIT_MSG=".git/COMMIT_EDITMSG"
-
-##
-# @description Flag to output to stdout (true) or Git buffer (false, default: true)
-FLAG_OUTPUT_TO_STDOUT=true
+# @description Output file path for commit message (empty string means stdout)
+OUTPUT_FILE=""
 
 ##
 # @description AI model name for commit message generation (default: sonnet)
@@ -113,52 +109,52 @@ display_help() {
   local script_name
   script_name=$(basename "$0")
   cat <<EOF
-Usage: $script_name [OPTIONS] [commit_msg_file]
+Usage: $script_name [OPTIONS]
 
 Generate Conventional Commits format messages by analyzing staged changes
 and recent commit history using AI.
 
 Options:
-  --git-buffer, --to-buffer   Output to Git commit buffer (default: stdout)
+  --output FILE, -o FILE      Write commit message to FILE instead of stdout
   --model MODEL               AI model name (default: sonnet)
                               Supported: gpt-*, o1-*, claude-*, haiku, sonnet, opus
   -h, --help                  Show this help message
-
-Arguments:
-  [commit_msg_file]           Git commit message file (default: .git/COMMIT_EDITMSG)
 
 Examples:
   # Output to stdout
   $script_name
 
   # Output to Git buffer with specific model
-  $script_name --git-buffer --model claude-sonnet-4-5
+  $script_name --output .git/COMMIT_EDITMSG --model claude-sonnet-4-5
 
-  # Custom commit message file
-  $script_name /path/to/COMMIT_EDITMSG
+  # Short option form
+  $script_name -o .git/COMMIT_EDITMSG
 EOF
 }
 
 ##
 # @description Parse command-line options and set configuration
 # @arg $@ string Command-line arguments to parse
-# @option --git-buffer|--to-buffer Output to Git commit buffer (.git/COMMIT_EDITMSG)
+# @option --output FILE|-o FILE Write commit message to FILE instead of stdout
 # @option --model MODEL Specify AI model name (default: sonnet)
 # @option -h|--help Display usage information
 # @example
 #   parse_options "$@"
-#   parse_options --model claude-sonnet-4-5 --to-buffer
+#   parse_options --model claude-sonnet-4-5 --output .git/COMMIT_EDITMSG
 # @exitcode 0 If parsing succeeds
 # @exitcode 1 If unknown option provided or required argument missing
-# @global FLAG_OUTPUT_TO_STDOUT
-# @global GIT_COMMIT_MSG
+# @global OUTPUT_FILE
 # @global AI_MODEL
 parse_options() {
   while [[ $# -gt 0 ]]; do
     case $1 in
-      --git-buffer|--to-buffer)
-        FLAG_OUTPUT_TO_STDOUT=false
-        shift
+      --output|-o)
+        if [[ -z "${2:-}" ]]; then
+          echo "Error: --output requires an argument" >&2
+          exit 1
+        fi
+        OUTPUT_FILE="$2"
+        shift 2
         ;;
       --model)
         if [[ -z "${2:-}" ]]; then
@@ -175,11 +171,6 @@ parse_options() {
       -*)
         echo "Error: Unknown option: $1" >&2
         exit 1
-        ;;
-      *)
-        # Non-option argument treated as commit message file
-        GIT_COMMIT_MSG="$1"
-        shift
         ;;
     esac
   done
@@ -395,27 +386,23 @@ generate_commit_message() {
 # @description Output commit message to stdout or write to file
 # Handles both interactive (stdout) and Git hook (file) output modes
 # @arg $1 string Commit message content
-# @arg $2 string Optional output file path (default: GIT_COMMIT_MSG)
 # @return 0 Always succeeds
-# @stdout Commit message (if FLAG_OUTPUT_TO_STDOUT is true)
+# @stdout Commit message (if OUTPUT_FILE is empty)
 # @stderr Status message (if outputting to file)
-# @global FLAG_OUTPUT_TO_STDOUT Determines output mode
-# @global GIT_COMMIT_MSG Default output file path
+# @global OUTPUT_FILE Output file path (empty means stdout)
 # @example
 #   output_commit_message "$commit_msg"
-#   output_commit_message "$commit_msg" ".git/COMMIT_EDITMSG"
 output_commit_message() {
   local commit_msg="$1"
-  local output_file="${2:-$GIT_COMMIT_MSG}"
 
-  if [[ "$FLAG_OUTPUT_TO_STDOUT" == true ]]; then
+  if [[ -z "$OUTPUT_FILE" ]]; then
     # Output to stdout (interactive mode)
     echo "$commit_msg"
   else
     # Write to file (Git hook mode)
-    rm -f "${output_file}"
-    echo "${commit_msg}" > "${output_file}"
-    echo "[OK] Commit message written to $output_file" >&2
+    rm -f "${OUTPUT_FILE}"
+    echo "${commit_msg}" > "${OUTPUT_FILE}"
+    echo "[OK] Commit message written to $OUTPUT_FILE" >&2
   fi
 }
 
@@ -431,8 +418,8 @@ if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
 
   # Check for existing message in Git buffer mode
   # Skip generation if commit message was previously generated
-  if [[ "$FLAG_OUTPUT_TO_STDOUT" == false && -f "$GIT_COMMIT_MSG" ]]; then
-    if has_existing_message "$GIT_COMMIT_MSG"; then
+  if [[ -n "$OUTPUT_FILE" && -f "$OUTPUT_FILE" ]]; then
+    if has_existing_message "$OUTPUT_FILE"; then
       echo "[OK] Detected existing Git-generated commit message. Skipping generation." >&2
       exit 0
     fi
