@@ -27,5 +27,6 @@
     "lint:gha:actions": "pnpm exec ghalint --config ./configs/ghalint.yaml run-action ",
     "lint:gha:workflows": "bash ./scripts/lint-actionlint.sh && pnpm exec ghalint --config ./configs/ghalint.yaml run",
     "test:sh": "bash scripts/run-specs.sh ",
-    "test:sh:gha": "pnpm run test:sh .github/actions/validate-environment/scripts/__tests__ && pnpm run test:sh .github/actions/__tests__"  }
+    "test:sh:gha": "pnpm run test:sh .github/actions/validate-environment/scripts/__tests__ && pnpm run test:sh .github/actions/__tests__"
+  }
 }
