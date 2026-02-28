@@ -1,7 +1,7 @@
 // src: shared/configs/commitlint.config.base.ts
 // @(#) : commitlint base configuration
 //
-// Copyright (c) 2025 atsushifx <https://github.com/atsushifx>
+// Copyright (c) 2025- atsushifx <https://github.com/atsushifx>
 //
 // This software is released under the MIT License.
 // https://opensource.org/licenses/MIT
@@ -12,6 +12,18 @@
 // commit lint common configs
 const baseConfig = {
   extends: ['@commitlint/config-conventional'],
+  parserPreset: {
+    parserOpts: {
+      headerPattern: /^(?:(merge) \(#(\d+)\): )?(\w*)(?:\(([^)]*)\))?!?: (.+)$/,
+      headerCorrespondence: [
+        'merge',
+        'pr',
+        'type',
+        'scope',
+        'subject',
+      ],
+    },
+  },
   rules: {
     'type-enum': [2, 'always', [
       // === Default conventional types ===
