@@ -1,7 +1,7 @@
 # src: scripts/libs/AgDevMode.ps1
 # @(#): Developer mode configuration/retrieval library
 #
-# Copyright (c) 2025- Furukawa Atsushi <atsushifx@gmail.com>
+# Copyright (c) 2026- Furukawa Atsushi <atsushifx@gmail.com>
 # Released under MIT License.
 
 ## Constants
