@@ -2,7 +2,7 @@
 ## src: ./scripts/sync-configs.sh
 # @(#) : Sync shared config files into target directory (by type)
 #
-# Copyright (c) 2025- atsushifx <http://github.com/atsushifx>
+# Copyright (c) 2026- atsushifx <http://github.com/atsushifx>
 #
 # This software is released under the MIT License.
 # https://opensource.org/licenses/MIT
