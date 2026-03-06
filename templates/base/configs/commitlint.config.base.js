@@ -1,7 +1,7 @@
 // src: shared/configs/commitlint.config.base.ts
 // @(#) : commitlint base configuration
 //
-// Copyright (c) 2025- atsushifx <https://github.com/atsushifx>
+// Copyright (c) 2026- atsushifx <https://github.com/atsushifx>
 //
 // This software is released under the MIT License.
 // https://opensource.org/licenses/MIT
