@@ -3,7 +3,7 @@
 //
 // @(#) : Sync base scripts into target directory's package.json
 //
-// Copyright (c) 2025- Furukawa Atsushi
+// Copyright (c) 2026- Furukawa Atsushi
 // Released under the MIT License.
 // https://opensource.org/licenses/MIT
 
