@@ -15,8 +15,8 @@ default: true
 whitespace: true
 
 # heading
-no-duplicate-heading: true
-siblings_only: true # allow duplicate headings if they are not siblings
+no-duplicate-heading:
+  siblings_only: true # allow duplicate headings if they are not siblings
 
 # line length
 line-length:
