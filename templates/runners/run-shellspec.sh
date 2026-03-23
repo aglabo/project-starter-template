@@ -11,8 +11,9 @@
 
 set -euo pipefail
 
-# Project root and constants
-PROJECT_ROOT="${PROJECT_ROOT:-$(git rev-parse --show-toplevel 2>/dev/null || (cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd))}"
+# shellcheck source=runners/libs/init-vars.lib.sh
+. "$(dirname "${BASH_SOURCE[0]}")/libs/init-vars.lib.sh"
+
 SHELLSPEC="${SHELLSPEC:-${PROJECT_ROOT}/.tools/shellspec/shellspec}"
 
 # Valid test type identifiers
@@ -26,7 +27,7 @@ SKIP_INTEGRATION_TESTS="${SKIP_INTEGRATION_TESTS:-1}"
 SPEC_SEARCH_ROOT="${SPEC_SEARCH_ROOT:-${PROJECT_ROOT}}"
 
 # shellcheck source=runners/libs/get-filelist.sh
-. "${PROJECT_ROOT}/runners/libs/get-filelist.sh"
+. "${SCRIPT_ROOT}/libs/get-filelist.lib.sh"
 
 #
 # @description Check if argument is a valid test type
@@ -139,25 +140,25 @@ resolve_spec_files() {
 
   local first_arg="$1"
 
-  # 単一 .spec.sh ファイル → そのまま出力
+  # 単一 .spec.sh ﾌtｧ@ｲCﾙ→ そのまま出力
   if is_spec_file "$first_arg"; then
     printf '%s\n' "$first_arg"
     return 0
   fi
 
-  # glob パス（*.spec.sh を含む glob）→ expand_spec_glob で展開
+  # glob ﾊﾟpｽX（*.spec.sh を含む glob）→ expand_spec_glob で展開
   if is_spec_glob "$first_arg"; then
     expand_spec_glob "$first_arg"
     return 0
   fi
 
-  # テスト種別以外 → エラー (stdout)
+  # ﾃeｽXﾄg種別以外 → ｴGﾗ臆[ (stdout)
   if ! is_test_type "$first_arg"; then
     printf "Error: Unknown argument '%s'. Expected a test type, spec file, or glob pattern.\n" "$first_arg"
     return 1
   fi
 
-  # テスト種別 → get_spec_files で展開
+  # ﾃeｽXﾄg種別 → get_spec_files で展開
   local test_type="$1"
   shift
   [[ "$test_type" == "system" ]] && SKIP_INTEGRATION_TESTS=0
