@@ -48,7 +48,7 @@ copy_config_files() {
   local target_dir="$2"
 
   for mapping in "${ref_config_files[@]}"; do
-    IFS=':' read -r src dest <<< "$mapping"
+    IFS=':' read -r src dest <<<"$mapping"
     copy_config "$src" "$dest" "$target_dir"
   done
 }
@@ -60,22 +60,22 @@ sync_config_type() {
   local config_files
 
   case "$config_type" in
-    secretlint)
-      config_files=("secretlint.config.base.yaml:configs/secretlint.config.yaml")
-      copy_config_files config_files "$target_dir"
-      ;;
-    package)
-      echo "[package.json:scripts]"
-      DRY_RUN=""
-      $FLAG_DRY_RUN && DRY_RUN="--dry-run"
-      pnpm exec tsx "$SCRIPT_SYNC" "$target_dir" "$REPO_ROOT" "$DRY_RUN"
-      ;;
+  secretlint)
+    config_files=("secretlint.config.base.yaml:configs/secretlint.config.yaml")
+    copy_config_files config_files "$target_dir"
+    ;;
+  package)
+    echo "[package.json:scripts]"
+    DRY_RUN=""
+    $FLAG_DRY_RUN && DRY_RUN="--dry-run"
+    pnpm exec tsx "$SCRIPT_SYNC" "$target_dir" "$REPO_ROOT" "$DRY_RUN"
+    ;;
 
-    *)
-      echo "Error: Unknown config_type: $config_type"
-      echo "   Must be one of: secretlint | all"
-      return 1
-      ;;
+  *)
+    echo "Error: Unknown config_type: $config_type"
+    echo "   Must be one of: secretlint | all"
+    return 1
+    ;;
   esac
 }
 
@@ -94,7 +94,7 @@ main() {
 
   # Display usage and exit if no arguments or --help/-h is provided
   if [[ -z "$target_dir" || -z "$config_type" || "$target_dir" == "--help" || "$target_dir" == "-h" ]]; then
-      print_usage
+    print_usage
     exit 0
   fi
 
@@ -110,9 +110,8 @@ main() {
   echo "Syncing configs from ${CONFIG_DIR} to: $target_dir"
   $FLAG_DRY_RUN && echo "Dry run mode is active. No files will be written."
 
-
   if [[ "$config_type" == "all" ]]; then
-    local config_types=( "secretlint" "package")
+    local config_types=("secretlint" "package")
     for type in "${config_types[@]}"; do
       echo "[$type]"
       sync_config_type "$type" "$target_dir" || exit 1
