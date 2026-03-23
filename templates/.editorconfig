@@ -1,5 +1,5 @@
-# src: shared/configs/secretlint.config.base.yaml
-# @(#) : editorconfig base configs (templates)
+# src: .editorconfig
+# @(#) : editorconfig for voift
 #
 # Copyright (c) 2026- atsushifx <https://github.com/atsushifx>
 #
@@ -20,47 +20,8 @@ indent_size = 2
 tab_width = 2
 
 # ─────────────────────────────
-# Documents
+# Source Code Files
 # ─────────────────────────────
-[*.md]
-indent_style = space
-indent_size = 2
-tab_width = 2
-
-# ─────────────────────────────
-# JSON
-# ─────────────────────────────
-[*.json]
-indent_style = space
-indent_size = 2
-tab_width = 2
-
-# ─────────────────────────────
-# YAML
-# ─────────────────────────────
-[*.{yaml,yml}]
-indent_style = space
-indent_size = 2
-tab_width = 2
-
-# ─────────────────────────────
-# INI / TOML
-# ─────────────────────────────
-[*.ini]
-indent_style = tab
-tab_width = 4
-
-[*.toml]
-indent_style = tab
-tab_width = 4
-
-# ─────────────────────────────
-# rc Files
-# ─────────────────────────────
-[*rc]
-indent_style = space
-indent_size = 2
-tab_width = 2
 
 # ─────────────────────────────
 # Shell Scripts
@@ -77,25 +38,61 @@ indent_size = 4
 tab_width = 4
 
 # ─────────────────────────────
+# Documents
+# ─────────────────────────────
+[*.md]
+indent_style = space
+indent_size = 2
+tab_width = 2
+
+# ─────────────────────────────
+# configuration files
+# ─────────────────────────────
+[*.json]
+indent_style = space
+indent_size = 2
+tab_width = 2
+
+[*.{yaml,yml}]
+indent_style = space
+indent_size = 2
+tab_width = 2
+
+[*.ini]
+indent_style = space
+indent_size = 4
+tab_width = 4
+
+[*.toml]
+indent_style = space
+indent_size = 2
+tab_width = 2
+
+[*rc]
+indent_style = space
+indent_size = 2
+tab_width = 2
+
+# ─────────────────────────────
 # Git Config Files
 # ─────────────────────────────
 [*.git*]
 indent_style = tab
 tab_width = 4
 
-[**/git/*]
-indent_style = tab
-tab_width = 4
-
 # ─────────────────────────────
 # Special Files (e.g. Dockerfile, LICENSE)
 # ─────────────────────────────
+[{Makefile,*.mk}]
+indent_style = tab
+indent_size = 4
+tab_width = 4
+
 # ignore files
 [**/*ignore]
 indent_style = space
 indent_size = 2
 tab_width = 2
-
 
 # [Dockerfile]
 # indent_style = space

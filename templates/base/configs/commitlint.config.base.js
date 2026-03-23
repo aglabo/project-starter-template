@@ -1,16 +1,13 @@
-// src: shared/configs/commitlint.config.base.ts
-// @(#) : commitlint base configuration
+// src: configs/commitlint.config.js
+// @(#) : commitlint basic configuration
 //
 // Copyright (c) 2026- atsushifx <https://github.com/atsushifx>
 //
 // This software is released under the MIT License.
 // https://opensource.org/licenses/MIT
 
-// type check for typescript
-// import type { UserConfig } from '@commitlint/types';
-
 // commit lint common configs
-const baseConfig = {
+module.exports = {
   extends: ['@commitlint/config-conventional'],
   parserPreset: {
     parserOpts: {
@@ -48,6 +45,3 @@ const baseConfig = {
     'header-max-length': [2, 'always', 76],
   },
 };
-
-// export
-export default baseConfig;

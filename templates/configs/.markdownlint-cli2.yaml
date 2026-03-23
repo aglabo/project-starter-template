@@ -8,7 +8,6 @@
 
 ## Files
 globs:
-  - "**/*.md"
 
 ## Ignores
 # ignore gitignore
