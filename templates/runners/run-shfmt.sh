@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# src: ./scripts/run-shellcheck.sh
-# @(#) : shellcheck runner
+# src: ./runners/run-shfmt.sh
+# @(#) : shfmt runner
 #
 # Copyright (c) 2026- atsushifx <https://github.com/atsushifx>
 #
@@ -11,15 +11,18 @@ set -euo pipefail
 
 # shellcheck source=runners/libs/init-vars.lib.sh
 . "$(dirname "${BASH_SOURCE[0]}")/libs/init-vars.lib.sh"
-cd "${SCRIPT_ROOT}/.."
 
-SHELLCHECKRC="${SHELLCHECKRC:-${SCRIPT_ROOT}/../configs/shellcheckrc}"
 main() {
+  local mode="list"
   while [[ $# -gt 0 ]]; do
     case "$1" in
-    --rcfile | -r)
-      SHELLCHECKRC="$2"
-      shift 2
+    --list | -l)
+      mode="list"
+      shift
+      ;;
+    --format)
+      mode="format"
+      shift
       ;;
     --)
       shift
@@ -37,21 +40,10 @@ main() {
     targets=(".")
   fi
   targets=("${targets[@]//\\//}")
-  local -a files=()
-  for target in "${targets[@]}"; do
-    if [[ -d $target ]]; then
-      while IFS= read -r -d '' f; do
-        files+=("$f")
-      done < <(find "$target" -path "*/.tools/*" -prune -o -name "*.sh" -print0)
-    else
-      files+=("$target")
-    fi
-  done
-  if [[ ${#files[@]} -eq 0 ]]; then
-    echo "No .sh files found." >&2
-    return 0
-  fi
-  (shellcheck --rcfile="$SHELLCHECKRC" "${files[@]}")
+  case "$mode" in
+  list) (cd "$PROJECT_ROOT" && shfmt -ln bash -i 2 -l -- "${targets[@]}") ;;
+  format) (cd "$PROJECT_ROOT" && shfmt -ln bash -i 2 -w -- "${targets[@]}") ;;
+  esac
 }
 if [[ ${BASH_SOURCE[0]} == "$0" ]]; then
   main "$@"
