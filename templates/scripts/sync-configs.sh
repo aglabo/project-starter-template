@@ -19,7 +19,8 @@
 set -euCo pipefail
 
 ##  Constants
-readonly REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../" && pwd)"
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../" && pwd)"
+readonly REPO_ROOT
 readonly CONFIG_DIR="${REPO_ROOT}/shared/configs"
 readonly SCRIPT_SYNC="${REPO_ROOT}/scripts/sync-package-scripts.ts"
 
@@ -61,6 +62,7 @@ sync_config_type() {
 
   case "$config_type" in
   secretlint)
+    # shellcheck disable=SC2034
     config_files=("secretlint.config.base.yaml:configs/secretlint.config.yaml")
     copy_config_files config_files "$target_dir"
     ;;
