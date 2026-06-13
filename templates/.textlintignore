@@ -16,3 +16,6 @@
 
 ## Dev tools
 .tools/**
+
+## Releases
+releases/**
