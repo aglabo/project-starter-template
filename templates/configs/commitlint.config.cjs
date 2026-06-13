@@ -10,6 +10,6 @@
 
 // commit lint common configs
 module.exports = {
-  extends: ['../base/configs/commitlint.config.base.js'],
+  extends: ['../base/configs/commitlint.config.base.cjs'],
   rules: {},
 };
