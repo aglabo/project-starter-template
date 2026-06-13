@@ -1,5 +1,5 @@
 # src: .gitignore
-# @(#) : mainly ignored files and directories
+# @(#) : main ignore settings: template
 #
 # Copyright (c) 2026- atsushifx <http://github.com/atsushifx>
 #
@@ -27,9 +27,9 @@ thumbs.db
 $~*
 ~*
 *~
-*tmp
-*swp
-*lock
+*.tmp
+*.swp
+*.lock
 
 # session files
 *session.json
@@ -40,6 +40,13 @@ $~*
 # .env files
 .env*
 .env.*
+
+# release
+releases/*
+!releases/.keep
+
+##  Git
+!**/.gitignore
 
 ## Development tools (installed locally)
 .tools/
@@ -52,7 +59,6 @@ $~*
 
 ## Coding AI depended
 # SDD (Spec-Driven Development) files
-**/.cc-sdd/
 
 # claude code setting
 .claude/*
@@ -61,15 +67,19 @@ $~*
 !.claude/**/settings.json
 
 # agents can tracking
+!**/CLAUDE*.md
 !.claude/agents/
 !.claude/agents/**
 !.claude/rules/
 !.claude/rules/**
+!.claude/commands/
+!.claude/commands/**
 
 # MCP server dependency files
 .cocoindex_code/
 .serena/
 .lsmcp/
+.codegraph/*
 
 ## Temporary directories are never tracked
 temp/
