@@ -34,7 +34,7 @@
     "lint:gha:workflows": "concurrently \"pnpm exec ghalint run --config ./configs/ghalint.yaml\" \"pnpm exec ghalint act --config ./configs/ghalint.yaml\"",
 
     "lint:spells": "cspell --config .vscode/cspell.json --cache --cache-location .cache/cspell/cSpellCache ",
-    "lint:text": "bash runners/run-textlint.sh ",
-    "lint:markdown": "bash runners/run-markdownlint.sh "
+    "lint:text": "textlint --config ${XDG_CONFIG_HOME}/linters/textlint/textlintrc.yaml ",
+    "lint:markdown": "markdownlint --config ${XDG_CONFIG_HOME}/linters/markdownlint/.markdownlint-cli2.yaml "
   }
 }
