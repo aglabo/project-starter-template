@@ -18,6 +18,9 @@ SHELLSPEC="${SHELLSPEC:-${PROJECT_ROOT}/.tools/shellspec/shellspec}"
 
 readonly TEST_TYPES=("all" "unit" "functional" "integration" "system" "e2e")
 
+# Directory name holding spec files, relative to each source tree
+readonly TEST_DIR_NAME="__tests__"
+
 SKIP_INTEGRATION_TESTS="${SKIP_INTEGRATION_TESTS:-1}"
 SPEC_SEARCH_ROOT="${SPEC_SEARCH_ROOT:-${PROJECT_ROOT}}"
 
@@ -58,8 +61,8 @@ expand_spec_glob() {
   )
 
   if [[ ${#matches[@]} -eq 0 ]]; then
-    echo "Warning: No spec files found matching glob '${pattern}'" >&2
-    return 0
+    echo "Error: No spec files found matching glob '${pattern}'" >&2
+    return 1
   fi
 
   local file
@@ -91,11 +94,14 @@ get_spec_files() {
   local test_type="$1"
   shift
 
+  # get_filelist treats a slash-containing filter as a path filter and any
+  # other filter as a glob-converted name filter, so "all" deliberately keeps
+  # the bare directory name. Do not add a trailing slash to unify them.
   local type_filter
   if [[ "$test_type" == "all" ]]; then
-    type_filter="tests"
+    type_filter="${TEST_DIR_NAME}"
   else
-    type_filter="tests/${test_type}"
+    type_filter="${TEST_DIR_NAME}/${test_type}"
   fi
 
   local -a spec_files
@@ -131,6 +137,13 @@ resolve_spec_files() {
     local -a expanded_specs
     mapfile -t expanded_specs < <(expand_spec_glob "$first_arg")
     mapfile -t RESOLVED_SPEC_FILES < <(filter_runnable_specs "${expanded_specs[@]}")
+    # mapfile masks expand_spec_glob's exit status, so the emptiness has to be
+    # re-checked here. mapfile yields either a zero-length array or a single
+    # empty element for empty input, hence both conditions.
+    if [[ ${#RESOLVED_SPEC_FILES[@]} -eq 0 || -z "${RESOLVED_SPEC_FILES[0]}" ]]; then
+      echo "Error: No runnable spec files found matching glob '${first_arg}'" >&2
+      return 1
+    fi
     shift
     SHELLSPEC_ARGS=("$@")
     printf '%s\n' "${RESOLVED_SPEC_FILES[@]}"
@@ -169,8 +182,8 @@ resolve_spec_files() {
   local -a spec_files
   mapfile -t spec_files < <(get_spec_files "$test_type" "${file_filters[@]}")
   if [[ ${#spec_files[@]} -eq 0 || -z "${spec_files[0]}" ]]; then
-    echo "Warning: No spec files found for test type '${test_type}'" >&2
-    return 0
+    echo "Error: No spec files found for test type '${test_type}'" >&2
+    return 1
   fi
 
   RESOLVED_SPEC_FILES=("${spec_files[@]}")
@@ -195,6 +208,13 @@ main() {
 
   parse_options "$@" >/dev/null
 
+  # Options-only invocation (e.g. "--integration") selects no specs, which is
+  # the same intent as no arguments at all: run shellspec's default path.
+  if [[ ${#PARSED_ARGS[@]} -eq 0 ]]; then
+    run_shellspec
+    exit $?
+  fi
+
   local resolved resolved_file
   resolved_file=$(mktemp)
   if ! resolve_spec_files "${PARSED_ARGS[@]}" >"$resolved_file"; then
@@ -203,10 +223,7 @@ main() {
     echo "$resolved" >&2
     exit 1
   fi
-  resolved=$(cat "$resolved_file")
   rm -f "$resolved_file"
-
-  [[ -z "$resolved" ]] && exit 0
 
   run_shellspec "${RESOLVED_SPEC_FILES[@]}" "${SHELLSPEC_ARGS[@]}"
 }
