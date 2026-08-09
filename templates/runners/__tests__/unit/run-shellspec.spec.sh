@@ -204,5 +204,47 @@ Describe 'run-shellspec.sh'
         The output should include "1 example"
       End
     End
+
+    # A spec that fails on purpose. This is what proves CI actually turns red:
+    # the runner's own guards (empty test type, unknown type, unmatched glob)
+    # all exit 1 without ever invoking shellspec, so none of them show that
+    # shellspec's own exit status survives run_shellspec.
+    Describe 'when a collected spec fails'
+      # Scoped to this Describe and torn down on the way out: the sibling
+      # "all" and default-path examples above assert success over the whole
+      # fixture tree, so a failing spec must not outlive this block. "e2e" is
+      # used because "functional" is asserted to be empty elsewhere, and both
+      # "integration" and "system" perturb SKIP_INTEGRATION_TESTS.
+      setup_failing_spec() {
+        [ -n "${FIXTURE_ROOT}" ] || return 1
+        mkdir -p "${FIXTURE_ROOT}/scripts/__tests__/e2e"
+        printf '%s\n' '#shellcheck shell=sh' \
+          'Describe "deliberately failing"' \
+          '  It "fails"' \
+          '    When call false' \
+          '    The status should be success' \
+          '  End' \
+          'End' \
+          >"${FIXTURE_ROOT}/scripts/__tests__/e2e/failing.spec.sh"
+      }
+
+      remove_failing_spec() {
+        [ -n "${FIXTURE_ROOT}" ] && rm -rf "${FIXTURE_ROOT}/scripts/__tests__/e2e"
+      }
+
+      BeforeAll 'setup_failing_spec'
+      AfterAll 'remove_failing_spec'
+
+      # The "1 failure" assertion is load-bearing: "e2e" would also exit 1 from
+      # the no-specs-found guard, which would pass a bare status check while
+      # verifying nothing. Requiring shellspec's own failure report pins the
+      # propagation path.
+      It 'exits non-zero because shellspec itself failed'
+        When run script runners/run-shellspec.sh e2e
+        The status should not equal 0
+        The output should include "1 failure"
+        The stderr should not include "No spec files found"
+      End
+    End
   End
 End

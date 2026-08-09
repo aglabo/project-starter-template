@@ -1,0 +1,76 @@
+# src: ./.github/workflows/ci-test-shellspec.yml
+# @(#) : Workflow for running shellspec unit tests in .github repository
+#
+# Copyright (c) 2026- atsushifx <https://github.com/atsushifx>
+#
+# This software is released under the MIT License.
+# https://opensource.org/licenses/MIT
+
+name: "CI Test ShellSpec"
+
+# Minimal permissions following security best practices
+permissions:
+  contents: read
+
+on:
+  push:
+    branches:
+      - main
+      - master
+      - releases
+
+  pull_request:
+    branches:
+      - main
+      - master
+      - releases
+
+  workflow_dispatch:
+
+jobs:
+  shellspec:
+    name: ShellSpec
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout repository
+        id: target-checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      # ripgrep is required by runners/libs/get-filelist.lib.sh for spec discovery
+      # and is not preinstalled on GitHub-hosted runners.
+      - name: Install ripgrep
+        id: ripgrep-install
+        if: steps.target-checkout.outcome == 'success'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends ripgrep
+
+      - name: Install shellspec
+        id: shellspec-install
+        if: steps.ripgrep-install.outcome == 'success'
+        run: |
+          git clone --depth 1 --branch "$SHELLSPEC_VERSION" \
+            https://github.com/shellspec/shellspec.git .tools/shellspec
+        env:
+          SHELLSPEC_VERSION: 0.28.1
+
+      # Validated after the installs so that ripgrep and shellspec are covered
+      # alongside the default Git/curl/gh checks.
+      - name: Validate environment
+        id: env-validation
+        if: steps.shellspec-install.outcome == 'success'
+        uses: aglabo/ci-platform/.github/actions/ca-validate-environment@d49d96532dbf95a356a5756864fa45e33a0fa033 # v0.3.4
+        with:
+          actions-type: read
+          additional-apps: |
+            rg|ripgrep|regex:ripgrep ([0-9.]+)|
+
+      - name: Run shellspec
+        id: shellspec-execute
+        if: steps.env-validation.outcome == 'success'
+        run: bash runners/run-shellspec.sh all
