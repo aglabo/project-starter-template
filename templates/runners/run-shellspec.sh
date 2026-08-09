@@ -94,14 +94,24 @@ get_spec_files() {
   local test_type="$1"
   shift
 
-  # get_filelist treats a slash-containing filter as a path filter and any
-  # other filter as a glob-converted name filter, so "all" deliberately keeps
-  # the bare directory name. Do not add a trailing slash to unify them.
+  # get_filelist applies these filters as unanchored regexes, so they have to be
+  # delimited as whole path components: the trailing separator keeps "unit" from
+  # matching "__tests__/unitary", and the leading one keeps "all" from matching
+  # "not__tests__". Both filters contain a separator, so each takes get_filelist's
+  # path-filter branch and is used as-is.
+  #
+  # Separators are written as [/] rather than a bare /: on Windows/Git Bash the
+  # MSYS argument path conversion rewrites a pattern shaped like /…/ before rg
+  # ever receives it (confirmed via MSYS_NO_PATHCONV), which silently matches
+  # nothing. A pattern starting with [ is left alone. This is not an rg defect.
+  #
+  # TEST_DIR_NAME and TEST_TYPES hold no regex metacharacters, so interpolating
+  # them directly is safe.
   local type_filter
   if [[ "$test_type" == "all" ]]; then
-    type_filter="${TEST_DIR_NAME}"
+    type_filter="(^|[/])${TEST_DIR_NAME}[/]"
   else
-    type_filter="${TEST_DIR_NAME}/${test_type}"
+    type_filter="(^|[/])${TEST_DIR_NAME}[/]${test_type}[/]"
   fi
 
   local -a spec_files
