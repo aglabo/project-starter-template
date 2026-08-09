@@ -6,44 +6,42 @@
 # This software is released under the MIT License.
 # https://opensource.org/licenses/MIT
 
-# ============================================================================
-# ShellSpec Configuration
-# ============================================================================
-# This file marks the project root and contains all ShellSpec options.
-# Automatically loaded by ShellSpec.
-#
-# See: https://github.com/shellspec/shellspec
-# ============================================================================
+## ShellSpec Configuration
+## Project-wide settings for shell script testing
 
-# === Base Configuration ===
-# Core testing setup: helpers, sandbox, and example handling
-
-# shell
+# Set shell to bash
 --shell bash
 
-# File Pattern
+# Specify spec directory
+--default-path "scripts/__tests__"
+
+# Spec file pattern (match .spec.sh instead of _spec.sh)
 --pattern "*.spec.sh"
 
-# Report format (detailed output for CI logs)
---format documentation
-
-# Enable color output
+# Enable colored output
 --color
 
-# Execution directory (run from spec file location for relative imports)
---execdir @specfile
+# Show execution times
+# --profile
+--profile-limit=10
 
-# Skip message severity (moderate = hide skipped test details)
---skip-message moderate
+# Show failure messages in detail
+ --fail-fast=1
 
-# Fail if no examples found (prevent silent failures)
---fail-no-examples
+# Set formatter (default: progress, options: documentation, tap, junit)
+--format documentation
 
-# Don't treat warnings as failures (allow exit code 0 with warnings)
---no-warning-as-failure
+# Coverage settings (requires kcov)
+# --kcov
+# --kcov-options "--exclude-pattern=/usr"
 
-# === Parallel Execution ===
-# Spec file parallel execution
-# @note: use in Windows is dangerous.
---jobs 4
+# Execution options
+--jobs 32
 
+# --random none
+
+# Output directory for reports
+--reportdir "temp/shellspec-reports"
+
+# Warning settings
+--warning-as-failure
