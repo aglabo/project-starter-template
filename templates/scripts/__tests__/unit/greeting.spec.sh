@@ -1,7 +1,7 @@
 #shellcheck shell=sh
 
 Describe 'greeting.sh'
-  Include ../../greeting.sh
+  Include templates/scripts/greeting.sh
 
   Describe 'greeting()'
     Context 'with valid input'
