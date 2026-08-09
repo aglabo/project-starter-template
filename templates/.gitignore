@@ -45,11 +45,12 @@ $~*
 releases/*
 !releases/.keep
 
-##  Git
-!**/.gitignore
 
 ## Development tools (installed locally)
 .tools/
+
+## beads
+.beads/*
 
 ## Worktrees
 # worktree base dir
@@ -98,4 +99,8 @@ tmp/
 !.vscode/cspell*
 
 ## Node
+.pnpm-store/
 node_modules/
+
+##  Git
+!**/.gitignore
