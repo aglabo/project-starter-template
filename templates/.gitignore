@@ -6,68 +6,66 @@
 # This software is released under the MIT License.
 # https://opensource.org/licenses/MIT
 
+# default: ignore all files
+*
 
-##  General
-#   OS specific files
-.DS_Store
-thumbs.db
+# Allow README, LICENSE, CONTRIBUTING
+!**/README*
+!**/LICENSE*
+!**/CONTRIBUTING*
 
-#   logs, patches
-*.log
-*.diff
-*.patch
+# Allow .github directories
+!.github/
+!.github/**
 
-#   history, cache
-.history/
-.cache/
-# **/*cache
+# Allow other ignore
+!*ignore
 
+# Allow editorconfig
+!**/.editorconfig
 
-#   backup/swap/temp
-$~*
-~*
-*~
-*.tmp
-*.swp
-*.lock
-
-# session files
-*session.json
-*session
-**/*session.json
-**/*session
-
-# .env files
-.env*
-.env.*
-
-# release
-releases/*
-!releases/.keep
+# Allow settings
+!**/settings.json
 
 
-## Development tools (installed locally)
-.tools/
+## Root configs
+!**/package.json
+!**/pnpm-lock.yaml
+!renovate.json
+!lefthook.yml
+!dprint.jsonc
+!.shellspec
+!**/.mcp.json
+!**/CHANGELOG.md
+!**/Release-Note.md
 
-## beads
-.beads/*
+## Project directories
+# config files
+!/configs/
+!/configs/**
+!/configs/**/*.json
+!/configs/**/*.yml
+!/configs/**/*.yaml
+!/configs/**/*.toml
+!/configs/**/*rc
+!/configs/**/*.js
+!/configs/**/*.mjs
 
-## Worktrees
-# worktree base dir
-.worktrees/
+# runners & scripts
+!/runners
+!/runners/**
+!/runners/**/*.sh
+!/scripts
+!/script/**
+!/scripts/**/*.sh
+!/scripts/**/*.ts
 
-## AI generated files
+## AI Agents
+# claude code
+!**/CLAUDE*.md
 
-## Coding AI depended
-# SDD (Spec-Driven Development) files
-
-# claude code setting
-.claude/*
-
-# settings
-!.claude/**/settings.json
-
-# agents can tracking
+# allowlist details: .claude/.gitignore
+!.claude/
 !**/CLAUDE*.md
 !.claude/agents/
 !.claude/agents/**
