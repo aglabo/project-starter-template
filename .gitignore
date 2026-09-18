@@ -9,6 +9,10 @@
 # default: ignore all files
 *
 
+## Allow Template files
+!/templates
+!/templates/**
+
 # Allow README, LICENSE, CONTRIBUTING
 !**/README*
 !**/LICENSE*
@@ -17,10 +21,6 @@
 # Allow .github directories
 !.github/
 !.github/**
-
-# Allow Templates
-!/templates/
-!/templates/**
 
 # Allow other ignore
 !*ignore
@@ -35,11 +35,11 @@
 ## Root configs
 !**/package.json
 !**/pnpm-lock.yaml
-!**/renovate.json
-!**/lefthook.yml
-!**/dprint.jsonc
-!**/.shellspec
-!**/.mcp.json
+!/renovate.json
+!/lefthook.yml
+!/dprint.jsonc
+!/.shellspec
+!/.mcp.json
 !**/CHANGELOG.md
 !**/Release-Note.md
 
@@ -60,7 +60,7 @@
 !/runners/**
 !/runners/**/*.sh
 !/scripts
-!/script/**
+!/scripts/**
 !/scripts/**/*.sh
 !/scripts/**/*.ts
 
@@ -71,13 +71,13 @@
 # allowlist details: .claude/.gitignore
 !.claude/
 !**/CLAUDE*.md
-!.claude/
 !.claude/agents/
 !.claude/agents/**
+!.claude/agents/**/*.md
 !.claude/rules/
 !.claude/rules/**
-!.claude/commands/
-!.claude/commands/**
+!.claude/rules/**/*.md
+
 
 ##  Editor
 #   VSCode

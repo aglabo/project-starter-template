@@ -65,15 +65,20 @@
 !**/CLAUDE*.md
 
 # allowlist details: .claude/.gitignore
+# allowlist details: .claude/.gitignore
 !.claude/
 !**/CLAUDE*.md
 !.claude/
 !.claude/agents/
 !.claude/agents/**
+!.claude/agents/**/*.md
 !.claude/rules/
 !.claude/rules/**
+!.claude/rules/**/*.md
 !.claude/commands/
 !.claude/commands/**
+!.claude/skills/
+!.claude/skills/**
 
 ##  Editor
 #   VSCode
