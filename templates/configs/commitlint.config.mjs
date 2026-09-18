@@ -9,7 +9,7 @@
 // type check for typescript
 
 // commit lint common configs
-module.exports = {
+export default {
   extends: ['../base/configs/commitlint.config.base.cjs'],
   rules: {},
 };
