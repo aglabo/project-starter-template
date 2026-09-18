@@ -55,7 +55,8 @@ space_redirects    = true
 keep_padding       = true
 # --func-next-line
 function_next_line = true
-minify             = false  # don't minify
+# --minify
+minify             = false
 
 # PowerShell
 [*.ps1]

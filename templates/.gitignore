@@ -56,7 +56,7 @@
 !/runners/**
 !/runners/**/*.sh
 !/scripts
-!/script/**
+!/scripts/**
 !/scripts/**/*.sh
 !/scripts/**/*.ts
 
