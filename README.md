@@ -7,8 +7,8 @@ It comes with best practices and essential tools pre-configured.
 
 ## Features
 
-- Easy development environment setup via PowerShell scripts
-  - Lightweight setup using Scoop & pnpm for Windows
+- Easy development environment setup via `scripts/setup-dev-env.sh`
+  - A single Bash script installs `lefthook`, `shellspec`, and the aglabo dev tools
 - Includes common boilerplate files such as `.editorconfig`, `.gitignore`, and more
   - Minimal configuration with flexibility for future extensions
 - Lightweight Git hook environment powered by `lefthook`
