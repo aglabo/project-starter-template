@@ -39,8 +39,8 @@
 !/lefthook.yml
 !/dprint.jsonc
 !/.shellspec
-!/mcp.json
-!++/CHANGELOG.md
+!/.mcp.json
+!**/CHANGELOG.md
 !**/Release-Note.md
 
 ## Project directories
