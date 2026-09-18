@@ -67,6 +67,7 @@
 # allowlist details: .claude/.gitignore
 !.claude/
 !**/CLAUDE*.md
+!.claude/
 !.claude/agents/
 !.claude/agents/**
 !.claude/rules/
@@ -74,31 +75,18 @@
 !.claude/commands/
 !.claude/commands/**
 
-# MCP server dependency files
-.cocoindex_code/
-.serena/
-.lsmcp/
-.codegraph/*
-
-## Temporary directories are never tracked
-temp/
-tmp/
-**/temp/
-**/tmp/
-
 ##  Editor
 #   VSCode
-.vscode/*
+!.vscode/
 !.vscode/settings.json
 !.vscode/tasks.json
 !.vscode/launch.json
 !.vscode/extensions.json
 !.vscode/*.code-snippets
 !.vscode/cspell*
+!.vscode/cspell*/**
 
-## Node
-.pnpm-store/
-node_modules/
 
 ##  Git
+# allow all gitignore
 !**/.gitignore
