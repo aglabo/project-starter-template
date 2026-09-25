@@ -229,7 +229,7 @@ make_context_block() {
 # - Supports piped stdin: ... | "${AI_COMMAND[@]}"
 #
 # **Supported Providers:**
-# - OpenAI (gpt-*, o1-*) → codex exec --model <model>
+# - OpenAI (gpt-*, o1-*) → codex exec -s read-only --color never --model <model>
 # - Anthropic (claude-*, haiku, sonnet, opus) → claude -p --model <model>
 # - OpenCode (org/model) → opencode run --model <model>
 #
@@ -253,7 +253,7 @@ get_model_command() {
   case "$model" in
   # OpenAI models
   gpt-* | o1-*)
-    AI_COMMAND=("codex" "exec" "--model" "${model}")
+    AI_COMMAND=("codex" "exec" "-s" "read-only" "--color" "never" "--model" "${model}")
     ;;
 
   # Anthropic (Claude) models
