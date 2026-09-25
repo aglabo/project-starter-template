@@ -38,12 +38,54 @@ _setup_shellspec_stub() {
 }
 
 #
+# @description Install a ShellSpec stub that reports the integration mode it inherited
+#              instead of its argv. Used to prove the flag actually crosses into the
+#              ShellSpec process: a mode set inside a subshell never gets that far
+# @sideeffect Sets _STUB_DIR and _SHELLSPEC_STUB
+#
+_setup_mode_stub() {
+  _STUB_DIR="$(mktemp -d)"
+  _SHELLSPEC_STUB="${_STUB_DIR}/shellspec-stub"
+  {
+    echo '#!/usr/bin/env bash'
+    echo 'printf "SKIP_INTEGRATION_TESTS=%s" "${SKIP_INTEGRATION_TESTS:-unset}"'
+  } >"$_SHELLSPEC_STUB"
+}
+
+#
 # @description Remove the stub installed by _setup_shellspec_stub()
 # @sideeffect Deletes _STUB_DIR and unsets the stub variables
 #
 _teardown_shellspec_stub() {
   [[ -n "${_STUB_DIR:-}" ]] && rm -rf "$_STUB_DIR"
   unset _STUB_DIR _SHELLSPEC_STUB
+}
+
+#
+# @description Build a private tree holding both a real spec root (pkg/__tests__/unit)
+#              and a decoy directory whose name merely ends in __tests__. The shared
+#              fixture cannot be used here: it is read-only for every example in the run
+# @sideeffect Sets _DECOY_ROOT and repoints SPEC_SEARCH_ROOT at it (saving _ORIG_ROOT)
+#
+_setup_decoy_tree() {
+  _DECOY_ROOT="$(mktemp -d)"
+  mkdir -p "${_DECOY_ROOT}/not__tests__/unit" "${_DECOY_ROOT}/pkg/__tests__/unit"
+  touch "${_DECOY_ROOT}/not__tests__/unit/decoy.spec.sh" \
+    "${_DECOY_ROOT}/pkg/__tests__/unit/real.spec.sh"
+  _ORIG_ROOT="${SPEC_SEARCH_ROOT:-}"
+  # shellcheck disable=SC2034
+  SPEC_SEARCH_ROOT="$_DECOY_ROOT"
+}
+
+#
+# @description Remove the tree built by _setup_decoy_tree() and restore SPEC_SEARCH_ROOT
+# @sideeffect Unsets _DECOY_ROOT
+#
+_teardown_decoy_tree() {
+  # shellcheck disable=SC2034
+  SPEC_SEARCH_ROOT="${_ORIG_ROOT:-}"
+  [[ -n "${_DECOY_ROOT:-}" ]] && rm -rf "$_DECOY_ROOT"
+  unset _DECOY_ROOT
 }
 
 Describe 'T-RUN-ITT: is_test_type()'
@@ -201,32 +243,52 @@ Describe 'get_spec_files()'
   End
 End
 
+# 共有フィクスチャは読み取り専用なので、おとりディレクトリは専用の木に作る
+Describe 'get_spec_files() — path component anchoring'
+  Before '_setup_decoy_tree'
+  After '_teardown_decoy_tree'
+
+  Describe 'When: エッジケース'
+    It '[Edge] T-RUN-GSF-10: collects the real __tests__ root for all'
+      When call get_spec_files 'all'
+      The output should include 'pkg/__tests__/unit/real.spec.sh'
+      The status should be success
+    End
+
+    # `__tests__` で終わるだけのディレクトリはテストルートではない
+    It '[Edge] T-RUN-GSF-11: skips a directory that merely ends in __tests__'
+      When call get_spec_files 'all'
+      The output should not include 'decoy.spec.sh'
+    End
+  End
+End
+
 Describe 'T-RUN-PO: parse_options()'
   Before 'SKIP_INTEGRATION_TESTS=1'
 
   Describe '--integration flag handling'
     It 'T-RUN-PO-01: removes --integration and sets SKIP_INTEGRATION_TESTS=0'
       When call parse_options 'unit' '--integration'
-      The output should equal 'unit'
+      The value "${PARSED_ARGS[*]}" should equal 'unit'
       The variable SKIP_INTEGRATION_TESTS should equal '0'
     End
 
     It 'T-RUN-PO-02: removes leading --integration flag'
       When call parse_options '--integration' 'unit'
-      The output should equal 'unit'
+      The value "${PARSED_ARGS[*]}" should equal 'unit'
     End
   End
 
   Describe 'passthrough of other options'
     It 'T-RUN-PO-03: passes --focus through unchanged'
       When call parse_options 'unit' '--focus'
-      The output should include 'unit'
-      The output should include '--focus'
+      The value "${PARSED_ARGS[*]}" should include 'unit'
+      The value "${PARSED_ARGS[*]}" should include '--focus'
     End
 
-    It 'T-RUN-PO-04: returns empty output for no arguments'
+    It 'T-RUN-PO-04: leaves PARSED_ARGS empty for no arguments'
       When call parse_options
-      The output should equal ''
+      The value "${#PARSED_ARGS[@]}" should equal '0'
     End
   End
 End
@@ -277,7 +339,7 @@ Describe 'T-RUN-RSF: resolve_spec_files()'
   Describe 'single spec file passthrough'
     It 'T-RUN-RSF-01: returns spec file unchanged for foo.spec.sh'
       When call resolve_spec_files 'foo.spec.sh'
-      The output should equal 'foo.spec.sh'
+      The value "${RESOLVED_SPEC_FILES[*]}" should equal 'foo.spec.sh'
       The status should be success
     End
   End
@@ -285,7 +347,7 @@ Describe 'T-RUN-RSF: resolve_spec_files()'
   Describe 'spec glob expansion'
     It 'T-RUN-RSF-02: expands glob pattern runners/libs/__tests__/unit/*.spec.sh'
       When call resolve_spec_files 'runners/libs/__tests__/unit/*.spec.sh'
-      The output should include '.spec.sh'
+      The value "${RESOLVED_SPEC_FILES[*]}" should include '.spec.sh'
       The status should be success
     End
   End
@@ -296,14 +358,14 @@ Describe 'T-RUN-RSF: resolve_spec_files()'
 
     It 'T-RUN-RSF-03: expands unit to unit spec files'
       When call resolve_spec_files 'unit'
-      The output should include '__tests__/unit'
+      The value "${RESOLVED_SPEC_FILES[*]}" should include '__tests__/unit'
       The status should be success
     End
 
     It 'T-RUN-RSF-04: sets SKIP_INTEGRATION_TESTS=0 for system'
       When call resolve_spec_files 'system'
       The variable SKIP_INTEGRATION_TESTS should equal '0'
-      The output should include '__tests__/system'
+      The value "${RESOLVED_SPEC_FILES[*]}" should include '__tests__/system'
       The status should be success
     End
 
@@ -311,15 +373,15 @@ Describe 'T-RUN-RSF: resolve_spec_files()'
     Describe 'When: 正常系'
       It '[Normal] T-RUN-RSF-07: expands functional to the functional spec'
         When call resolve_spec_files 'functional'
-        The output should include '__tests__/functional'
+        The value "${RESOLVED_SPEC_FILES[*]}" should include '__tests__/functional'
         The status should be success
       End
 
-      # T-RUN-RSF-03 が stdout を見るのに対し、こちらは stderr を見る。
+      # T-RUN-RSF-03 が解決結果を見るのに対し、こちらは stderr を見る。
       # 種別が解決できないと "No spec files found" 警告が出る回帰を防ぐ
       It '[Normal] T-RUN-RSF-08: leaves stderr silent when unit specs are found'
         When call resolve_spec_files 'unit'
-        The output should be present
+        The value "${#RESOLVED_SPEC_FILES[@]}" should not equal '0'
         The stderr should be blank
       End
     End
@@ -329,7 +391,7 @@ Describe 'T-RUN-RSF: resolve_spec_files()'
       It '[Error] T-RUN-RSF-09: warns and succeeds when no spec matches the type'
         When call resolve_spec_files 'e2e'
         The stderr should include "No spec files found for test type 'e2e'"
-        The output should be blank
+        The value "${#RESOLVED_SPEC_FILES[@]}" should equal '0'
         The status should be success
       End
     End
@@ -339,14 +401,14 @@ Describe 'T-RUN-RSF: resolve_spec_files()'
     It 'T-RUN-RSF-05: exits with failure for unknown test type'
       When call resolve_spec_files 'unknowntype'
       The stderr should include "Error: Unknown argument 'unknowntype'"
-      The output should be blank
+      The value "${#RESOLVED_SPEC_FILES[@]}" should equal '0'
       The status should be failure
     End
 
     It 'T-RUN-RSF-06: reports missing arguments on stderr'
       When call resolve_spec_files
       The stderr should include 'Error: No arguments given.'
-      The output should be blank
+      The value "${#RESOLVED_SPEC_FILES[@]}" should equal '0'
       The status should be failure
     End
   End
@@ -399,6 +461,64 @@ Describe 'T-RUN-MRS: main()'
       It '[Edge] T-RUN-MRS-06: launches ShellSpec with the target alone when no option is given'
         When run env SHELLSPEC="$_SHELLSPEC_STUB" bash "$SCRIPT" 'foo.spec.sh'
         The output should equal '[foo.spec.sh]'
+        The status should be success
+      End
+    End
+  End
+
+  # main() が SKIP_INTEGRATION_TESTS を subshell の中で立てると、ShellSpec には
+  # 既定値の 1 が渡り integration テストが黙って skip される。
+  # parse_options() / resolve_spec_files() 単体のテストはこの経路を通らないので、
+  # 実際に ShellSpec プロセスが受け取った値をここで確かめる
+  Describe 'integration mode propagation'
+    Before 'setup_temp_specs'
+    Before '_setup_mode_stub'
+    After '_teardown_shellspec_stub'
+    After 'teardown_temp_specs'
+
+    Describe 'When: 正常系'
+      It '[Normal] T-RUN-MRS-07: hands SKIP_INTEGRATION_TESTS=0 to ShellSpec for --integration'
+        When run env SHELLSPEC="$_SHELLSPEC_STUB" bash "$SCRIPT" 'foo.spec.sh' '--integration'
+        The output should equal 'SKIP_INTEGRATION_TESTS=0'
+        The status should be success
+      End
+
+      It '[Normal] T-RUN-MRS-08: hands SKIP_INTEGRATION_TESTS=0 to ShellSpec for the system type'
+        When run env SPEC_SEARCH_ROOT="$TEMP_DIR" SHELLSPEC="$_SHELLSPEC_STUB" bash "$SCRIPT" 'system'
+        The output should equal 'SKIP_INTEGRATION_TESTS=0'
+        The status should be success
+      End
+    End
+
+    Describe 'When: エッジケース'
+      It '[Edge] T-RUN-MRS-09: keeps SKIP_INTEGRATION_TESTS=1 for a plain unit run'
+        When run env SPEC_SEARCH_ROOT="$TEMP_DIR" SHELLSPEC="$_SHELLSPEC_STUB" bash "$SCRIPT" 'unit'
+        The output should equal 'SKIP_INTEGRATION_TESTS=1'
+        The status should be success
+      End
+    End
+  End
+
+  # `pnpm run test:sh` は引数なしでこの runner を呼ぶ。既定の種別が無いと
+  # 標準のテストコマンドが常に失敗する
+  Describe 'default target'
+    Before 'setup_temp_specs'
+    Before '_setup_shellspec_stub'
+    After '_teardown_shellspec_stub'
+    After 'teardown_temp_specs'
+
+    Describe 'When: エッジケース'
+      It '[Edge] T-RUN-MRS-10: falls back to the all suite when no argument is given'
+        When run env SPEC_SEARCH_ROOT="$TEMP_DIR" SHELLSPEC="$_SHELLSPEC_STUB" bash "$SCRIPT"
+        The output should include '__tests__/unit/'
+        The output should include '__tests__/system/'
+        The status should be success
+      End
+
+      It '[Edge] T-RUN-MRS-11: falls back to the all suite when only options are given'
+        When run env SPEC_SEARCH_ROOT="$TEMP_DIR" SHELLSPEC="$_SHELLSPEC_STUB" bash "$SCRIPT" '--repair'
+        The output should include '__tests__/unit/'
+        The output should include '[--repair]'
         The status should be success
       End
     End

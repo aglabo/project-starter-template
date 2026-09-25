@@ -19,8 +19,20 @@ SHELLSPEC="${SHELLSPEC:-${PROJECT_ROOT}/.tools/shellspec/shellspec}"
 # Valid test type identifiers
 readonly TEST_TYPES=("all" "unit" "functional" "integration" "system" "e2e")
 
+# Test type used when the caller names no target (`pnpm run test:sh`)
+readonly DEFAULT_TEST_TYPE='all'
+
 # Directory name that roots every spec tree (runners/__tests__/unit/... etc.)
 readonly TESTS_DIR='__tests__'
+
+# Arguments left over after parse_options() consumed the flags it owns.
+# Both of these are outputs: a function that sets SKIP_INTEGRATION_TESTS cannot
+# return its result on stdout, because reading stdout would put it in a subshell
+# and the flag assignment would be lost when that subshell exits.
+PARSED_ARGS=()
+
+# Spec file paths produced by resolve_spec_files()
+RESOLVED_SPEC_FILES=()
 
 # Test mode: set SKIP_INTEGRATION_TESTS=1 by default (development mode)
 # Override with INTEGRATION_TEST=1 env var or --integration flag to run real-machine tests
@@ -103,40 +115,52 @@ expand_spec_glob() {
 get_spec_files() {
   local test_type="$1"
   shift
+  # The leading separator anchors the filter to a whole path component: without it
+  # a directory merely ending in the name (not__tests__/unit/) would match too.
+  # It is written as the class [/] rather than a bare slash because MSYS2 rewrites
+  # a slash-led token inside an argument into a Windows path before rg sees it
   local type_filter
   if [[ "$test_type" == "all" ]]; then
-    type_filter="${TESTS_DIR}/"
+    type_filter="[/]${TESTS_DIR}/"
   else
-    type_filter="${TESTS_DIR}/${test_type}/"
+    type_filter="[/]${TESTS_DIR}/${test_type}/"
   fi
   get_filelist "$SPEC_SEARCH_ROOT" "*.spec.sh" "$type_filter" "$@"
 }
 
 #
-# @description Parse options, extracting --integration flag
+# @description Parse options, extracting --integration flag. Must be called in the
+#              caller's own shell: both results are globals, never stdout
 # @arg $@ Command line arguments
-# @stdout Remaining arguments (without --integration), newline-separated
+# @sideeffect Sets PARSED_ARGS to the remaining arguments (without --integration)
 # @sideeffect Sets SKIP_INTEGRATION_TESTS=0 if --integration found
 #
 parse_options() {
+  PARSED_ARGS=()
   local arg
   for arg in "$@"; do
     if [[ "$arg" == "--integration" ]]; then
       SKIP_INTEGRATION_TESTS=0
     else
-      printf '%s\n' "$arg"
+      PARSED_ARGS+=("$arg")
     fi
   done
 }
 
 #
-# @description Resolve spec files from arguments (handles test types, globs, single files)
+# @description Resolve spec files from arguments (handles test types, globs, single files).
+#              Must be called in the caller's own shell: the result is a global, never
+#              stdout, because the `system` type also has to set SKIP_INTEGRATION_TESTS
+#              and a subshell would discard that assignment
 # @arg $@ Command line arguments (test type, spec file, or glob pattern)
-# @stdout List of spec file paths
 # @stderr Error and warning messages
+# @sideeffect Sets RESOLVED_SPEC_FILES to the resolved spec file paths (empty on no match)
+# @sideeffect Sets SKIP_INTEGRATION_TESTS=0 for the `system` test type
 # @exitcode 0 on success, 1 on error
 #
 resolve_spec_files() {
+  RESOLVED_SPEC_FILES=()
+
   [[ $# -eq 0 ]] && {
     printf 'Error: No arguments given.\n' >&2
     return 1
@@ -144,15 +168,16 @@ resolve_spec_files() {
 
   local first_arg="$1"
 
-  # 単一 .spec.sh ファイルはそのまま出力
+  # 単一 .spec.sh ファイルはそのまま返す
   if is_spec_file "$first_arg"; then
-    printf '%s\n' "$first_arg"
+    RESOLVED_SPEC_FILES=("$first_arg")
     return 0
   fi
 
   # glob パス（*.spec.sh を含む glob）は expand_spec_glob で展開
   if is_spec_glob "$first_arg"; then
-    expand_spec_glob "$first_arg"
+    mapfile -t RESOLVED_SPEC_FILES < <(expand_spec_glob "$first_arg")
+    _drop_empty_resolved
     return 0
   fi
 
@@ -166,13 +191,23 @@ resolve_spec_files() {
   local test_type="$1"
   shift
   [[ "$test_type" == "system" ]] && SKIP_INTEGRATION_TESTS=0
-  local -a spec_files
-  mapfile -t spec_files < <(get_spec_files "$test_type" "$@")
-  if [[ ${#spec_files[@]} -eq 0 || -z "${spec_files[0]}" ]]; then
+  mapfile -t RESOLVED_SPEC_FILES < <(get_spec_files "$test_type" "$@")
+  _drop_empty_resolved
+  if [[ ${#RESOLVED_SPEC_FILES[@]} -eq 0 ]]; then
     echo "Warning: No spec files found for test type '${test_type}'" >&2
-    return 0
   fi
-  printf '%s\n' "${spec_files[@]}"
+  return 0
+}
+
+#
+# @description Normalize RESOLVED_SPEC_FILES: a producer emitting a bare newline
+#              leaves mapfile with a single empty element, which is not a spec file
+# @sideeffect Empties RESOLVED_SPEC_FILES when it holds one empty element
+#
+_drop_empty_resolved() {
+  if [[ ${#RESOLVED_SPEC_FILES[@]} -eq 1 && -z "${RESOLVED_SPEC_FILES[0]}" ]]; then
+    RESOLVED_SPEC_FILES=()
+  fi
 }
 
 #
@@ -206,19 +241,15 @@ run_shellspec() {
 #   main test.spec.sh --repair        # Run with ShellSpec options
 #
 main() {
-  if [[ $# -eq 0 ]]; then
-    echo "Usage: run-shellspec.sh <test-type|spec-file|spec-glob> [--integration] [shellspec-options]" >&2
-    exit 1
-  fi
-
-  local -a filtered_args
-  mapfile -t filtered_args < <(parse_options "$@")
+  # Called in this shell, not through a pipe or $(): parse_options() reports its
+  # result in PARSED_ARGS precisely so that SKIP_INTEGRATION_TESTS survives
+  parse_options "$@"
 
   # Targets come first, so everything from the first option onward is a
   # ShellSpec option (its values must not be mistaken for targets)
   local -a targets=() options=()
   local arg seen_option=0
-  for arg in ${filtered_args[@]+"${filtered_args[@]}"}; do
+  for arg in ${PARSED_ARGS[@]+"${PARSED_ARGS[@]}"}; do
     [[ $seen_option -eq 0 && "$arg" == -* ]] && seen_option=1
     if [[ $seen_option -eq 1 ]]; then
       options+=("$arg")
@@ -227,14 +258,16 @@ main() {
     fi
   done
 
-  local resolved
-  resolved=$(resolve_spec_files ${targets[@]+"${targets[@]}"}) || exit 1
+  # No target named (`pnpm run test:sh` passes none, and so does an
+  # options-only invocation): run the whole suite
+  [[ ${#targets[@]} -eq 0 ]] && targets=("$DEFAULT_TEST_TYPE")
 
-  [[ -z "$resolved" ]] && exit 0
+  # Likewise called directly: the `system` type sets SKIP_INTEGRATION_TESTS
+  resolve_spec_files "${targets[@]}" || exit 1
 
-  local -a spec_files
-  mapfile -t spec_files <<<"$resolved"
-  run_shellspec "${spec_files[@]}" ${options[@]+"${options[@]}"}
+  [[ ${#RESOLVED_SPEC_FILES[@]} -eq 0 ]] && exit 0
+
+  run_shellspec "${RESOLVED_SPEC_FILES[@]}" ${options[@]+"${options[@]}"}
 }
 
 # Execute main only if script is run directly (not sourced)
