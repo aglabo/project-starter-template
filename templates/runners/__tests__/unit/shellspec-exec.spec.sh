@@ -48,6 +48,11 @@ _setup_mode_stub() {
   _SHELLSPEC_STUB="${_STUB_DIR}/shellspec-stub"
   {
     echo '#!/usr/bin/env bash'
+    # SC2016: シングルクォートは意図的。この行はスタブの中身を書き出すだけで、
+    # SKIP_INTEGRATION_TESTS はスタブ実行時に展開されなければならない。
+    # ダブルクォートにすると書き込み時点の値 (未設定なので unset) が焼き付き、
+    # このスタブを使う 3 つの例がすべて SKIP_INTEGRATION_TESTS=unset を見てしまう
+    # shellcheck disable=SC2016
     echo 'printf "SKIP_INTEGRATION_TESTS=%s" "${SKIP_INTEGRATION_TESTS:-unset}"'
   } >"$_SHELLSPEC_STUB"
 }
