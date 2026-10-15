@@ -35,7 +35,7 @@
     "lint:markdown": "markdownlint --config ${XDG_CONFIG_HOME}/linters/markdownlint/.markdownlint-cli2.yaml "
   },
   "packageManager": "pnpm@12.11.2",
-  "engine": {
+  "engines": {
     "pnpm": ">=12"
   }
 }
