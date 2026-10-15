@@ -1,4 +1,4 @@
-// src: configs/commitlint.config.js
+// src: base/configs/commitlint.config.based.mjs
 // @(#) : commitlint basic configuration
 //
 // Copyright (c) 2025- atsushifx <http://github.com/atsushifx>
@@ -7,7 +7,7 @@
 // https://opensource.org/licenses/MIT
 
 // commit lint common configs
-module.exports = {
+const BaseConfig = {
   extends: ['@commitlint/config-conventional'],
   parserPreset: {
     parserOpts: {
@@ -45,3 +45,5 @@ module.exports = {
     'header-max-length': [2, 'always', 76],
   },
 };
+
+export default BaseConfig;
