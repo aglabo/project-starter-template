@@ -6,6 +6,9 @@
 # This software is released under the MIT License.
 # https://opensource.org/licenses/MIT
 
+## Dev tools
+**/.tools/**
+
 ## AI Generated files
 .claude/**
 .serena/**
@@ -13,9 +16,6 @@
 # temp
 **/temp/**
 **/tmp/**
-
-## Dev tools
-.tools/**
 
 ## Releases
 releases/**
