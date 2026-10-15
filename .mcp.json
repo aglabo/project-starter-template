@@ -1,1 +1,4 @@
-./templates/.mcp.json
+{
+  "mcpServers": {
+  }
+}
