@@ -9,6 +9,7 @@
 # default: ignore all files
 *
 
+
 # Allow README, LICENSE, CONTRIBUTING
 !**/README*
 !**/LICENSE*
@@ -17,6 +18,14 @@
 # Allow .github directories
 !.github/
 !.github/**
+
+# Allow Templates
+!/templates/
+!/templates/**
+
+# Allow profile (organization README)
+!/profile/
+!/profile/**
 
 # Allow other ignore
 !*ignore
@@ -31,25 +40,36 @@
 ## Root configs
 !**/package.json
 !**/pnpm-lock.yaml
-!renovate.json
-!lefthook.yml
-!dprint.jsonc
-!.shellspec
+!**/renovate.json
+!**/lefthook.yml
+!**/dprint.jsonc
+!**/.shellspec
 !**/.mcp.json
 !**/CHANGELOG.md
 !**/Release-Note.md
 
 ## Project directories
 # config files
-!/configs/
-!/configs/**
-!/configs/**/*.json
-!/configs/**/*.yml
-!/configs/**/*.yaml
-!/configs/**/*.toml
-!/configs/**/*rc
-!/configs/**/*.js
-!/configs/**/*.mjs
+!configs/
+!configs/**
+!configs/**/*.json
+!configs/**/*.yml
+!configs/**/*.yaml
+!configs/**/*.toml
+!configs/**/*rc
+!configs/**/*.js
+!configs/**/*.mjs
+
+# base configs
+!base/
+!base/**
+!base/**/*.json
+!base/**/*.yml
+!base/**/*.yaml
+!base/**/*.toml
+!base/**/*rc
+!base/**/*.js
+!base/**/*.mjs
 
 # runners & scripts
 !/runners
@@ -65,24 +85,19 @@
 !**/CLAUDE*.md
 
 # allowlist details: .claude/.gitignore
-# allowlist details: .claude/.gitignore
 !.claude/
 !**/CLAUDE*.md
 !.claude/
 !.claude/agents/
 !.claude/agents/**
-!.claude/agents/**/*.md
 !.claude/rules/
 !.claude/rules/**
-!.claude/rules/**/*.md
 !.claude/commands/
 !.claude/commands/**
-!.claude/skills/
-!.claude/skills/**
 
 ##  Editor
 #   VSCode
-!.vscode/
+!.vscode
 !.vscode/settings.json
 !.vscode/tasks.json
 !.vscode/launch.json
@@ -95,3 +110,43 @@
 ##  Git
 # allow all gitignore
 !**/.gitignore
+
+
+## Deny rules (keep last)
+# default deny rules
+
+#   OS specific files
+.DS_Store
+thumbs.db
+
+#   logs, patches
+**/*.log
+**/*.diff
+**/*.patch
+
+#   history, cache
+**/.history/
+**/.cache/
+
+#   backup/swap/temp
+**/$~*
+**/~*
+**/*~
+**/*.tmp
+**/*.swp
+**/*.lock
+
+#   session files
+**/*session.json
+**/*session
+
+#   .env files
+**/.env*
+
+#   temporary directories
+**/temp/
+**/tmp/
+
+#   node
+**/node_modules/
+**/.pnpm-store/
