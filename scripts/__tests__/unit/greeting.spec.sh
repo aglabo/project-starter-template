@@ -1,5 +1,7 @@
 #shellcheck shell=sh
 
+Include "${SHELLSPEC_PROJECT_ROOT}/scripts/__tests__/spec_helper.sh"
+
 Describe 'greeting.sh'
   Include scripts/greeting.sh
 
