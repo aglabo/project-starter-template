@@ -144,7 +144,9 @@ thumbs.db
 **/.env*
 
 #   temporary directories
+**/temp
 **/temp/
+**/tmp
 **/tmp/
 
 #   node
