@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# runners/__tests__/unit/shellspec-exec.spec.sh
+# runners/exec/__tests__/unit/shellspec-exec.spec.sh
 # @(#) : BDD unit tests for shellspec-exec.sh
 #
 # Copyright (c) 2026- atsushifx <https://github.com/atsushifx>
@@ -7,63 +7,39 @@
 # This software is released under the MIT License.
 # https://opensource.org/licenses/MIT
 # shellcheck shell=bash
-# shellspec-exec.spec.sh — BDD spec for shellspec-exec.sh
+# shellspec-exec.spec.sh - BDD spec for shellspec-exec.sh
 
-Include "${SHELLSPEC_PROJECT_ROOT}/runners/__tests__/spec_helper.sh"
+Include "${SHELLSPEC_PROJECT_ROOT}/runners/exec/__tests__/spec_helper.sh"
 Include "${SHELLSPEC_PROJECT_ROOT}/runners/exec/shellspec-exec.sh"
 
 SCRIPT="${SHELLSPEC_PROJECT_ROOT}/runners/exec/shellspec-exec.sh"
 
 # --- internal helpers -------------------------------------------------------
 
-# 定数
+# Constants
 
-# setup_temp_specs() が作るフィクスチャの spec ファイル総数
+# Total number of spec files in the fixture built by setup_temp_specs()
 # (unit 6 / integration 1 / system 1 / functional 1)
 _FIXTURE_SPEC_COUNT=9
 
-# 関数
-
-#
-# @description Install a ShellSpec stub that prints its argv instead of running specs
-# @sideeffect Sets _STUB_DIR and _SHELLSPEC_STUB
-#
-_setup_shellspec_stub() {
-  _STUB_DIR="$(mktemp -d)"
-  _SHELLSPEC_STUB="${_STUB_DIR}/shellspec-stub"
-  {
-    echo '#!/usr/bin/env bash'
-    echo 'printf "[%s]" "$@"'
-  } >"$_SHELLSPEC_STUB"
-}
+# Functions
 
 #
 # @description Install a ShellSpec stub that reports the integration mode it inherited
 #              instead of its argv. Used to prove the flag actually crosses into the
-#              ShellSpec process: a mode set inside a subshell never gets that far
+#              ShellSpec process: a mode set inside a subshell never gets that far.
+#              Removed by teardown_shellspec_stub() (spec_helper.sh)
 # @sideeffect Sets _STUB_DIR and _SHELLSPEC_STUB
 #
 _setup_mode_stub() {
-  _STUB_DIR="$(mktemp -d)"
+  make_temp_dir _STUB_DIR || return 1
   _SHELLSPEC_STUB="${_STUB_DIR}/shellspec-stub"
-  {
-    echo '#!/usr/bin/env bash'
-    # SC2016: シングルクォートは意図的。この行はスタブの中身を書き出すだけで、
-    # SKIP_INTEGRATION_TESTS はスタブ実行時に展開されなければならない。
-    # ダブルクォートにすると書き込み時点の値 (未設定なので unset) が焼き付き、
-    # このスタブを使う 3 つの例がすべて SKIP_INTEGRATION_TESTS=unset を見てしまう
-    # shellcheck disable=SC2016
-    echo 'printf "SKIP_INTEGRATION_TESTS=%s" "${SKIP_INTEGRATION_TESTS:-unset}"'
-  } >"$_SHELLSPEC_STUB"
-}
-
-#
-# @description Remove the stub installed by _setup_shellspec_stub()
-# @sideeffect Deletes _STUB_DIR and unsets the stub variables
-#
-_teardown_shellspec_stub() {
-  [[ -n "${_STUB_DIR:-}" ]] && rm -rf "$_STUB_DIR"
-  unset _STUB_DIR _SHELLSPEC_STUB
+  # SC2016: the single quotes are intentional. This line only writes the stub body,
+  # so SKIP_INTEGRATION_TESTS must be expanded when the stub runs.
+  # With double quotes, the value at write time (unset) would be baked in,
+  # and all 3 examples using this stub would see SKIP_INTEGRATION_TESTS=unset
+  # shellcheck disable=SC2016
+  write_bash_stub "$_SHELLSPEC_STUB" 'printf "SKIP_INTEGRATION_TESTS=%s" "${SKIP_INTEGRATION_TESTS:-unset}"'
 }
 
 #
@@ -73,10 +49,9 @@ _teardown_shellspec_stub() {
 # @sideeffect Sets _DECOY_ROOT and repoints SPEC_SEARCH_ROOT at it (saving _ORIG_ROOT)
 #
 _setup_decoy_tree() {
-  _DECOY_ROOT="$(mktemp -d)"
+  make_temp_dir _DECOY_ROOT || return 1
   mkdir -p "${_DECOY_ROOT}/not__tests__/unit" "${_DECOY_ROOT}/pkg/__tests__/unit"
-  touch "${_DECOY_ROOT}/not__tests__/unit/decoy.spec.sh" \
-    "${_DECOY_ROOT}/pkg/__tests__/unit/real.spec.sh"
+  touch "${_DECOY_ROOT}/not__tests__/unit/decoy.spec.sh"     "${_DECOY_ROOT}/pkg/__tests__/unit/real.spec.sh"
   _ORIG_ROOT="${SPEC_SEARCH_ROOT:-}"
   # shellcheck disable=SC2034
   SPEC_SEARCH_ROOT="$_DECOY_ROOT"
@@ -89,8 +64,7 @@ _setup_decoy_tree() {
 _teardown_decoy_tree() {
   # shellcheck disable=SC2034
   SPEC_SEARCH_ROOT="${_ORIG_ROOT:-}"
-  [[ -n "${_DECOY_ROOT:-}" ]] && rm -rf "$_DECOY_ROOT"
-  unset _DECOY_ROOT
+  remove_temp_dir _DECOY_ROOT
 }
 
 Describe 'T-RUN-ITT: is_test_type()'
@@ -225,8 +199,8 @@ Describe 'get_spec_files()'
       The output should not include '\'
     End
 
-    # 種別名が `__tests__/<type>/` として解決されることを確かめる
-    Describe 'When: 正常系'
+    # Verify that a type name resolves to `__tests__/<type>/`
+    Describe 'When: Normal cases'
       It '[Normal] T-RUN-GSF-07: returns the functional spec for functional'
         When call get_spec_files 'functional'
         The output should include '__tests__/functional'
@@ -248,19 +222,19 @@ Describe 'get_spec_files()'
   End
 End
 
-# 共有フィクスチャは読み取り専用なので、おとりディレクトリは専用の木に作る
-Describe 'get_spec_files() — path component anchoring'
+# The shared fixture is read-only, so build the decoy directories in a dedicated tree
+Describe 'get_spec_files() - path component anchoring'
   Before '_setup_decoy_tree'
   After '_teardown_decoy_tree'
 
-  Describe 'When: エッジケース'
+  Describe 'When: Edge cases'
     It '[Edge] T-RUN-GSF-10: collects the real __tests__ root for all'
       When call get_spec_files 'all'
       The output should include 'pkg/__tests__/unit/real.spec.sh'
       The status should be success
     End
 
-    # `__tests__` で終わるだけのディレクトリはテストルートではない
+    # A directory that merely ends with `__tests__` is not a test root
     It '[Edge] T-RUN-GSF-11: skips a directory that merely ends in __tests__'
       When call get_spec_files 'all'
       The output should not include 'decoy.spec.sh'
@@ -374,16 +348,16 @@ Describe 'T-RUN-RSF: resolve_spec_files()'
       The status should be success
     End
 
-    # 種別名が `__tests__/<type>/` として解決されることを確かめる
-    Describe 'When: 正常系'
+    # Verify that a type name resolves to `__tests__/<type>/`
+    Describe 'When: Normal cases'
       It '[Normal] T-RUN-RSF-07: expands functional to the functional spec'
         When call resolve_spec_files 'functional'
         The value "${RESOLVED_SPEC_FILES[*]}" should include '__tests__/functional'
         The status should be success
       End
 
-      # T-RUN-RSF-03 が解決結果を見るのに対し、こちらは stderr を見る。
-      # 種別が解決できないと "No spec files found" 警告が出る回帰を防ぐ
+      # T-RUN-RSF-03 checks the resolved result; this one checks stderr.
+      # Guards against a regression where an unresolved type emits a "No spec files found" warning
       It '[Normal] T-RUN-RSF-08: leaves stderr silent when unit specs are found'
         When call resolve_spec_files 'unit'
         The value "${#RESOLVED_SPEC_FILES[@]}" should not equal '0'
@@ -391,8 +365,8 @@ Describe 'T-RUN-RSF: resolve_spec_files()'
       End
     End
 
-    # フィクスチャに e2e ディレクトリは無い (spec_helper.sh の意図的な欠落)
-    Describe 'When: 異常系'
+    # The fixture has no e2e directory (intentionally omitted by runners/libs/__tests__/spec_helper.sh)
+    Describe 'When: Error cases'
       It '[Error] T-RUN-RSF-09: warns and succeeds when no spec matches the type'
         When call resolve_spec_files 'e2e'
         The stderr should include "No spec files found for test type 'e2e'"
@@ -439,10 +413,10 @@ Describe 'T-RUN-MRS: main()'
   End
 
   Describe 'ShellSpec option passthrough'
-    Before '_setup_shellspec_stub'
-    After '_teardown_shellspec_stub'
+    Before 'setup_shellspec_stub'
+    After 'teardown_shellspec_stub'
 
-    Describe 'When: 正常系'
+    Describe 'When: Normal cases'
       It '[Normal] T-RUN-MRS-03: forwards an option placed after the spec file to ShellSpec'
         When run env SHELLSPEC="$_SHELLSPEC_STUB" bash "$SCRIPT" 'foo.spec.sh' '--repair'
         The output should equal '[foo.spec.sh][--repair]'
@@ -462,7 +436,7 @@ Describe 'T-RUN-MRS: main()'
       End
     End
 
-    Describe 'When: エッジケース'
+    Describe 'When: Edge cases'
       It '[Edge] T-RUN-MRS-06: launches ShellSpec with the target alone when no option is given'
         When run env SHELLSPEC="$_SHELLSPEC_STUB" bash "$SCRIPT" 'foo.spec.sh'
         The output should equal '[foo.spec.sh]'
@@ -471,17 +445,17 @@ Describe 'T-RUN-MRS: main()'
     End
   End
 
-  # main() が SKIP_INTEGRATION_TESTS を subshell の中で立てると、ShellSpec には
-  # 既定値の 1 が渡り integration テストが黙って skip される。
-  # parse_options() / resolve_spec_files() 単体のテストはこの経路を通らないので、
-  # 実際に ShellSpec プロセスが受け取った値をここで確かめる
+  # If main() sets SKIP_INTEGRATION_TESTS inside a subshell, ShellSpec receives
+  # the default of 1 and integration tests are silently skipped.
+  # Unit tests of parse_options() / resolve_spec_files() do not take this path,
+  # so verify here the value the ShellSpec process actually received
   Describe 'integration mode propagation'
     Before 'setup_temp_specs'
     Before '_setup_mode_stub'
-    After '_teardown_shellspec_stub'
+    After 'teardown_shellspec_stub'
     After 'teardown_temp_specs'
 
-    Describe 'When: 正常系'
+    Describe 'When: Normal cases'
       It '[Normal] T-RUN-MRS-07: hands SKIP_INTEGRATION_TESTS=0 to ShellSpec for --integration'
         When run env SHELLSPEC="$_SHELLSPEC_STUB" bash "$SCRIPT" 'foo.spec.sh' '--integration'
         The output should equal 'SKIP_INTEGRATION_TESTS=0'
@@ -495,7 +469,7 @@ Describe 'T-RUN-MRS: main()'
       End
     End
 
-    Describe 'When: エッジケース'
+    Describe 'When: Edge cases'
       It '[Edge] T-RUN-MRS-09: keeps SKIP_INTEGRATION_TESTS=1 for a plain unit run'
         When run env SPEC_SEARCH_ROOT="$TEMP_DIR" SHELLSPEC="$_SHELLSPEC_STUB" bash "$SCRIPT" 'unit'
         The output should equal 'SKIP_INTEGRATION_TESTS=1'
@@ -504,15 +478,15 @@ Describe 'T-RUN-MRS: main()'
     End
   End
 
-  # `pnpm run test:sh` は引数なしでこの runner を呼ぶ。既定の種別が無いと
-  # 標準のテストコマンドが常に失敗する
+  # `pnpm run test:sh` calls this runner without arguments. Without a default type,
+  # the standard test command would always fail
   Describe 'default target'
     Before 'setup_temp_specs'
-    Before '_setup_shellspec_stub'
-    After '_teardown_shellspec_stub'
+    Before 'setup_shellspec_stub'
+    After 'teardown_shellspec_stub'
     After 'teardown_temp_specs'
 
-    Describe 'When: エッジケース'
+    Describe 'When: Edge cases'
       It '[Edge] T-RUN-MRS-10: falls back to the all suite when no argument is given'
         When run env SPEC_SEARCH_ROOT="$TEMP_DIR" SHELLSPEC="$_SHELLSPEC_STUB" bash "$SCRIPT"
         The output should include '__tests__/unit/'
