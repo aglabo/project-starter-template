@@ -7,90 +7,90 @@
 # This software is released under the MIT License.
 # https://opensource.org/licenses/MIT
 # shellcheck shell=bash
-# init-vars.lib.spec.sh — BDD spec for init-vars.lib.sh
+# init-vars.lib.spec.sh - BDD spec for init-vars.lib.sh
 
-# --- テスト基盤 -------------------------------------------------------------
+# --- Test harness ----------------------------------------------------------
 
 Include "${SHELLSPEC_PROJECT_ROOT}/runners/libs/__tests__/spec_helper.sh"
 
-# --- テスト対象 -------------------------------------------------------------
+# --- Subject under test ----------------------------------------------------
 
-# init-vars.lib.sh は `Include` しない。`Include` は spec 読み込み時に 1 回だけ
-# source するため、lib の二重 source ガード `readonly _INIT_VARS_LIB_SH=1` により
-# 2 回目以降が無効化され、git スタブを仕込んだ状態で評価し直せない。
-# 代わりに疑似ツリーへ複製した lib を、例ごとに別プロセスのプローブから source する
+# Do not `Include` init-vars.lib.sh. `Include` sources it only once at spec load,
+# so the lib's double-source guard `readonly _INIT_VARS_LIB_SH=1` disables later
+# sources and the lib cannot be re-evaluated with a git stub in place.
+# Instead, each example sources a fixture copy of the lib from a separate probe process
 _IVPR_LIB="${SHELLSPEC_PROJECT_ROOT}/runners/libs/init-vars.lib.sh"
 
-# --- 内部ヘルパー -----------------------------------------------------------
+# --- Internal helpers ------------------------------------------------------
 
-# 定数
+# Constants
 
-# 疑似ツリーの根。ShellSpec が実行終了時にまとめて消す一時領域に置く
-_IVPR_FIXTURE_ROOT="${SHELLSPEC_TMPBASE:-${TMPDIR:-/tmp}}/init-vars-fixture"
+# Fixture tree root. Placed in the temp area ShellSpec removes when the run ends
+_IVPR_FIXTURE_ROOT="${SPEC_FIXTURE_BASE}/init-vars-fixture"
 
-# 疑似ツリーの組み立て完了マーカー。`--jobs 4` 下で作りかけのツリーを掴まないようにする
+# Fixture-ready marker. Keeps examples under `--jobs 4` from using a half-built tree
 _IVPR_FIXTURE_READY="${_IVPR_FIXTURE_ROOT}/.fixture-ready"
 
-# 疑似プロジェクト根。git が使えないとき PROJECT_ROOT が解決すべき値
-# （T-RUN-IVPR-03/04/05 の期待値）
+# Fake project root. The value PROJECT_ROOT must resolve to when git is unavailable
+# (expected value for T-RUN-IVPR-03/04/05)
 _IVPR_FAKE_ROOT="${_IVPR_FIXTURE_ROOT}/root"
 
-# 疑似ツリー側の lib。プローブはこちらを source する
+# Fixture copy of the lib. Probes source this one
 _IVPR_FIXTURE_LIB="${_IVPR_FAKE_ROOT}/runners/libs/init-vars.lib.sh"
 
-# `runners/` 直下（深さ 1）の呼び出し元を模したプローブ（T-RUN-IVPR-03 の入力）
+# Probe mimicking a caller directly under `runners/` (depth 1) (input for T-RUN-IVPR-03)
 _IVPR_SHALLOW_PROBE="${_IVPR_FAKE_ROOT}/runners/probe-shallow.sh"
 
-# `runners/exec/` 配下（深さ 2）の呼び出し元を模したプローブ
-# （T-RUN-IVPR-01/02/04/05 の入力）
+# Probe mimicking a caller under `runners/exec/` (depth 2)
+# (input for T-RUN-IVPR-01/02/04/05)
 _IVPR_DEEP_PROBE="${_IVPR_FAKE_ROOT}/runners/exec/probe-deep.sh"
 
-# git 成功スタブを選ぶプローブの引数。これ以外の語は失敗スタブを選ぶ
+# Probe argument that selects the git success stub. Any other word selects the failure stub
 _IVPR_GIT_OK='git-ok'
 
-# git 失敗スタブを選ぶプローブの引数
+# Probe argument that selects the git failure stub
 _IVPR_GIT_NG='git-ng'
 
-# git 成功スタブが `rev-parse --show-toplevel` として返すパス（T-RUN-IVPR-01 の期待値）
+# Path the git success stub returns for `rev-parse --show-toplevel` (expected value for T-RUN-IVPR-01)
 _IVPR_GIT_TOPLEVEL='/fake/git/toplevel'
 
-# git 失敗スタブの終了コード。128 は実機の git がリポジトリ外で返す値
+# Exit code of the git failure stub. 128 is what real git returns outside a repository
 _IVPR_GIT_FAILURE_CODE=128
 
-# 呼び出し元があらかじめ与える PROJECT_ROOT（T-RUN-IVPR-02 の入力かつ期待値）
+# PROJECT_ROOT preset by the caller (input and expected value for T-RUN-IVPR-02)
 _IVPR_PRESET_ROOT='/preset/root'
 
-# プローブの出力行数。PROJECT_ROOT と SCRIPT_ROOT でちょうど 2 行になる。
-# フォールバックをサブシェルで囲み忘れると PROJECT_ROOT が 2 行になり、この値が崩れる
+# Probe output line count: exactly 2 lines, PROJECT_ROOT and SCRIPT_ROOT.
+# If the fallback is not wrapped in a subshell, PROJECT_ROOT spans 2 lines and breaks this
 _IVPR_PROBE_LINE_COUNT=2
 
-# `runners/` 直下（深さ 1）の呼び出し元が指すべき SCRIPT_ROOT。
-# プローブと疑似ツリーは PROJECT_ROOT のテストと共有する（T-RUN-IVSR-01/02 の期待値）
+# SCRIPT_ROOT expected for a caller directly under `runners/` (depth 1).
+# Probes and fixture tree are shared with the PROJECT_ROOT tests (expected value for T-RUN-IVSR-01/02)
 _IVSR_SHALLOW_SCRIPT_ROOT="${_IVPR_FAKE_ROOT}/runners"
 
-# `runners/exec/`（深さ 2）の呼び出し元が指すべき SCRIPT_ROOT。
-# PROJECT_ROOT の `_IVPR_FAKE_ROOT` とは別物になる（T-RUN-IVSR-03 の期待値）
+# SCRIPT_ROOT expected for a caller in `runners/exec/` (depth 2).
+# Differs from `_IVPR_FAKE_ROOT` used for PROJECT_ROOT (expected value for T-RUN-IVSR-03)
 _IVSR_DEEP_SCRIPT_ROOT="${_IVPR_FAKE_ROOT}/runners/exec"
 
-# 関数
+# Functions
 
 #
-# @description init-vars.lib.sh のプローブスクリプトを書き出す。
-#              プローブは第 1 引数で git のスタブを選び（_IVPR_GIT_OK なら成功、
-#              それ以外なら失敗）、疑似ツリー側の lib を source して
-#              1 行目に PROJECT_ROOT、2 行目に SCRIPT_ROOT を出力する。
-#              深さの違うディレクトリに同じ内容のプローブを置くのは、PROJECT_ROOT が
-#              呼び出し元の位置に左右されないこと（どちらの深さでも疑似プロジェクト根に
-#              なること）を観測するため。一方 SCRIPT_ROOT は呼び出し元のディレクトリの
-#              ままなので、同じ 2 行の出力で両方の性質を確かめられる
-# @arg $1 string 書き出すプローブのパス
+# @description Writes a probe script for init-vars.lib.sh.
+#              The probe picks a git stub by its first argument (success for _IVPR_GIT_OK,
+#              failure otherwise), sources the fixture copy of the lib, and prints
+#              PROJECT_ROOT on line 1 and SCRIPT_ROOT on line 2.
+#              Identical probes are placed at different depths to observe that PROJECT_ROOT
+#              does not depend on the caller location (it resolves to the fake project root
+#              at either depth). SCRIPT_ROOT, by contrast, stays the caller directory,
+#              so the same 2-line output verifies both properties
+# @arg $1 string Path of the probe to write
 # @return 0 when the probe was written
 # @sideeffect Creates the probe script at $1
 #
 _write_init_vars_probe() {
   cat >"$1" <<EOF
 #!/usr/bin/env bash
-# init-vars.lib.sh のプローブ（spec が生成）。\$1 で git のスタブを選ぶ
+# Probe for init-vars.lib.sh (generated by the spec). \$1 selects the git stub
 if [[ "\${1:-}" == '${_IVPR_GIT_OK}' ]]; then
   git() { printf '%s\n' '${_IVPR_GIT_TOPLEVEL}'; }
 else
@@ -102,12 +102,12 @@ EOF
 }
 
 #
-# @description 疑似プロジェクトツリーを組み立てる。`<fake-root>/runners/libs/` へ
-#              テスト対象の lib を複製し、深さ 1 と深さ 2 のプローブを置く。
-#              `.shellspec` は `--jobs 4` で spec ファイルを並行実行するため、
-#              組み立て完了を最後に立てるマーカーで表し、作りかけのツリーを
-#              後続の例が掴まないようにする。途中で失敗したときはマーカーを
-#              残さず非 0 で返し、次の呼び出しが組み立て直す
+# @description Builds the fake project tree. Copies the lib under test to
+#              `<fake-root>/runners/libs/` and places the depth-1 and depth-2 probes.
+#              Since `.shellspec` runs spec files in parallel with `--jobs 4`,
+#              completion is signaled by a marker created last, so later examples
+#              never pick up a half-built tree. On a mid-way failure no marker is
+#              left and it returns non-zero, so the next call rebuilds the tree
 # @arg none
 # @return 0 when the fixture tree is ready; 1 when it could not be built
 # @sideeffect Creates _IVPR_FIXTURE_ROOT and its contents on disk
@@ -120,33 +120,33 @@ _setup_init_vars_fixture() {
   _write_init_vars_probe "$_IVPR_SHALLOW_PROBE" || return 1
   _write_init_vars_probe "$_IVPR_DEEP_PROBE" || return 1
 
-  # 完了マーカーは全ての書き出しが成功した後にだけ立てる
+  # Create the completion marker only after every write has succeeded
   : >"$_IVPR_FIXTURE_READY" || return 1
 }
 
-# --- テスト本体 -------------------------------------------------------------
+# --- Test cases ------------------------------------------------------------
 
 #
-# 全ての runner スクリプトが source する共通変数の初期化 lib。
+# Shared variable initialization lib sourced by every runner script.
 #
 Describe 'init-vars.lib.sh'
   #
-  # プロジェクト根の決定。git が使えるならその出力を、使えないなら
-  # lib 自身の位置から導く。呼び出し元の階層の深さに依存してはならない
+  # Determining the project root. Use git output when git is available; otherwise
+  # derive it from the lib location. It must not depend on the caller directory depth
   #
   Describe 'T-RUN-IVPR: PROJECT_ROOT'
     Before '_setup_init_vars_fixture'
 
-    # git リポジトリの中では git の答えが正であり、呼び出し元の指定はそれより優先される
-    Describe 'When: 正常系'
-      It 'Then: [Normal] T-RUN-IVPR-01: git が使えるときは git の出力をそのまま採る'
+    # Inside a git repository git is authoritative, and a caller-provided value takes precedence over it
+    Describe 'When: Normal cases'
+      It 'Then: [Normal] T-RUN-IVPR-01: uses git output as-is when git is available'
         When run bash "$_IVPR_DEEP_PROBE" "$_IVPR_GIT_OK"
         The line 1 of output should equal "$_IVPR_GIT_TOPLEVEL"
         The lines of output should equal "$_IVPR_PROBE_LINE_COUNT"
         The status should be success
       End
 
-      It 'Then: [Normal] T-RUN-IVPR-02: 呼び出し元が与えた PROJECT_ROOT を上書きしない'
+      It 'Then: [Normal] T-RUN-IVPR-02: does not overwrite PROJECT_ROOT provided by the caller'
         When run env "PROJECT_ROOT=${_IVPR_PRESET_ROOT}" bash "$_IVPR_DEEP_PROBE" "$_IVPR_GIT_OK"
         The line 1 of output should equal "$_IVPR_PRESET_ROOT"
         The lines of output should equal "$_IVPR_PROBE_LINE_COUNT"
@@ -154,17 +154,17 @@ Describe 'init-vars.lib.sh'
       End
     End
 
-    # git が使えないときは lib 自身の位置からプロジェクト根を導く。
-    # 呼び出し元がどの階層にいても同じ根に解決しなければならない
-    Describe 'When: 異常系'
-      It 'Then: [Error] T-RUN-IVPR-03: git が失敗しても runners/ 直下の呼び出し元からプロジェクト根を導く'
+    # When git is unavailable, derive the project root from the lib location.
+    # It must resolve to the same root whatever directory depth the caller is at
+    Describe 'When: Error cases'
+      It 'Then: [Error] T-RUN-IVPR-03: derives the project root from a caller directly under runners/ when git fails'
         When run bash "$_IVPR_SHALLOW_PROBE" "$_IVPR_GIT_NG"
         The line 1 of output should equal "$_IVPR_FAKE_ROOT"
         The lines of output should equal "$_IVPR_PROBE_LINE_COUNT"
         The status should be success
       End
 
-      It 'Then: [Error] T-RUN-IVPR-04: git が失敗しても runners/exec/ の呼び出し元からプロジェクト根を導く'
+      It 'Then: [Error] T-RUN-IVPR-04: derives the project root from a caller in runners/exec/ when git fails'
         When run bash "$_IVPR_DEEP_PROBE" "$_IVPR_GIT_NG"
         The line 1 of output should equal "$_IVPR_FAKE_ROOT"
         The lines of output should equal "$_IVPR_PROBE_LINE_COUNT"
@@ -172,9 +172,9 @@ Describe 'init-vars.lib.sh'
       End
     End
 
-    # 呼び出し元が変数を空文字のまま export している場合も、値が無いことに変わりはない
-    Describe 'When: エッジケース'
-      It 'Then: [Edge] T-RUN-IVPR-05: 空文字の PROJECT_ROOT は未設定として扱いフォールバックする'
+    # A variable the caller exported as an empty string still means no value
+    Describe 'When: Edge cases'
+      It 'Then: [Edge] T-RUN-IVPR-05: treats an empty PROJECT_ROOT as unset and falls back'
         When run env 'PROJECT_ROOT=' bash "$_IVPR_DEEP_PROBE" "$_IVPR_GIT_NG"
         The line 1 of output should equal "$_IVPR_FAKE_ROOT"
         The lines of output should equal "$_IVPR_PROBE_LINE_COUNT"
@@ -184,16 +184,16 @@ Describe 'init-vars.lib.sh'
   End
 
   #
-  # 呼び出し元スクリプトのディレクトリの決定。lib 自身ではなく lib を source した
-  # スクリプトの位置を指し続けなければならない。PROJECT_ROOT のフォールバックが
-  # lib 自身の位置を基準にしても、SCRIPT_ROOT の意味は変えてはならない
+  # Determining the caller script directory. It must keep pointing to the script that
+  # sourced the lib, not to the lib itself. Even though the PROJECT_ROOT fallback is
+  # based on the lib location, the meaning of SCRIPT_ROOT must not change
   #
   Describe 'T-RUN-IVSR: SCRIPT_ROOT'
     Before '_setup_init_vars_fixture'
 
-    # git が使えるときも SCRIPT_ROOT は git の答えに引きずられてはならない
-    Describe 'When: 正常系'
-      It 'Then: [Normal] T-RUN-IVSR-01: git が使えるときも runners/ 直下の呼び出し元のディレクトリを指す'
+    # Even when git is available, SCRIPT_ROOT must not be pulled toward the git answer
+    Describe 'When: Normal cases'
+      It 'Then: [Normal] T-RUN-IVSR-01: points to the directory of a caller directly under runners/ when git is available'
         When run bash "$_IVPR_SHALLOW_PROBE" "$_IVPR_GIT_OK"
         The line 2 of output should equal "$_IVSR_SHALLOW_SCRIPT_ROOT"
         The lines of output should equal "$_IVPR_PROBE_LINE_COUNT"
@@ -201,9 +201,9 @@ Describe 'init-vars.lib.sh'
       End
     End
 
-    # git フォールバックは PROJECT_ROOT の行だけの話であり、SCRIPT_ROOT には波及しない
-    Describe 'When: 異常系'
-      It 'Then: [Error] T-RUN-IVSR-02: git が失敗しても runners/ 直下の呼び出し元のディレクトリのまま'
+    # The git fallback only concerns the PROJECT_ROOT line and does not affect SCRIPT_ROOT
+    Describe 'When: Error cases'
+      It 'Then: [Error] T-RUN-IVSR-02: stays the directory of a caller directly under runners/ when git fails'
         When run bash "$_IVPR_SHALLOW_PROBE" "$_IVPR_GIT_NG"
         The line 2 of output should equal "$_IVSR_SHALLOW_SCRIPT_ROOT"
         The lines of output should equal "$_IVPR_PROBE_LINE_COUNT"
@@ -211,13 +211,147 @@ Describe 'init-vars.lib.sh'
       End
     End
 
-    # 呼び出し元が 1 階層深いとき、SCRIPT_ROOT と PROJECT_ROOT は別のディレクトリになる
-    Describe 'When: エッジケース'
-      It 'Then: [Edge] T-RUN-IVSR-03: runners/exec/ の呼び出し元では runners/exec を指す'
+    # When the caller is one level deeper, SCRIPT_ROOT and PROJECT_ROOT are different directories
+    Describe 'When: Edge cases'
+      It 'Then: [Edge] T-RUN-IVSR-03: points to runners/exec for a caller in runners/exec/'
         When run bash "$_IVPR_DEEP_PROBE" "$_IVPR_GIT_NG"
         The line 2 of output should equal "$_IVSR_DEEP_SCRIPT_ROOT"
         The lines of output should equal "$_IVPR_PROBE_LINE_COUNT"
         The status should be success
+      End
+    End
+  End
+End
+
+# --- Internal helpers ------------------------------------------------------
+
+# Child-process body: cd to $1, source the lib $2, print the resolved PROJECT_ROOT.
+# shellcheck disable=SC2016 # expanded by the child shell, not here
+_CHILD_SCRIPT='cd "$1" && . "$2" && printf "%s\n" "$PROJECT_ROOT"'
+
+# Child-process prefix replacing git with a stub that always fails
+# (_IVPR_GIT_FAILURE_CODE); used by T-01-02-01.
+_GIT_FAIL_STUB="git() { return ${_IVPR_GIT_FAILURE_CODE}; }; "
+
+# Creates the fixtures under _TEST_DIR and resolves the expected roots.
+#   other/ : a foreign git repo used as the caller's cwd
+#   plain/ : a non-git directory
+#   proj/  : a non-git project holding a copy of the lib at runners/libs/
+#   repo/  : a git repo (no commits) holding a lib copy nested at a/b/runners/libs/,
+#            so its git toplevel (repo/) differs from the lib's ../.. (repo/a/b/)
+_setup_env() {
+  make_temp_dir _TEST_DIR || return 1
+  mkdir -p "${_TEST_DIR}/other" "${_TEST_DIR}/plain" "${_TEST_DIR}/proj/runners/libs"
+  mkdir -p "${_TEST_DIR}/repo/a/b/runners/libs"
+  git -C "${_TEST_DIR}/other" init -q
+  git -C "${_TEST_DIR}/repo" init -q
+  _PROJ_LIB="${_TEST_DIR}/proj/runners/libs/init-vars.lib.sh"
+  cp "${_IVPR_LIB}" "${_PROJ_LIB}"
+  _NESTED_LIB="${_TEST_DIR}/repo/a/b/runners/libs/init-vars.lib.sh"
+  cp "${_IVPR_LIB}" "${_NESTED_LIB}"
+  _NESTED_GIT_ROOT=$(git -C "${_TEST_DIR}/repo" rev-parse --show-toplevel)
+  _NESTED_FALLBACK=$(cd "${_TEST_DIR}/repo/a/b" && pwd)
+  _CI_ROOT=$(git -C "${SHELLSPEC_PROJECT_ROOT}" rev-parse --show-toplevel)
+  _OTHER_ROOT=$(git -C "${_TEST_DIR}/other" rev-parse --show-toplevel)
+  _CI_FALLBACK=$(cd "${SHELLSPEC_PROJECT_ROOT}" && pwd)
+  _PROJ_ROOT=$(cd "${_TEST_DIR}/proj" && pwd)
+}
+
+# Sources a lib in a fresh child process with PROJECT_ROOT and the guard unset,
+# and prints the resolved PROJECT_ROOT.
+# Arguments: $1 - cwd of the child process, $2 - lib path
+_resolve_root() {
+  env -u PROJECT_ROOT -u _INIT_VARS_LIB_SH \
+    bash -c "${_CHILD_SCRIPT}" _ "$1" "$2"
+}
+
+# Same as _resolve_root, but with git replaced by _GIT_FAIL_STUB,
+# forcing the ../.. fallback.
+# Arguments: $1 - cwd of the child process, $2 - lib path
+_resolve_root_git_fails() {
+  env -u PROJECT_ROOT -u _INIT_VARS_LIB_SH \
+    bash -c "${_GIT_FAIL_STUB}${_CHILD_SCRIPT}" _ "$1" "$2"
+}
+
+# Same as _resolve_root, but with PROJECT_ROOT preset in the child's env.
+# Arguments: $1 - cwd of the child process, $2 - lib path, $3 - PROJECT_ROOT value
+_resolve_root_with() {
+  env -u _INIT_VARS_LIB_SH PROJECT_ROOT="$3" \
+    bash -c "${_CHILD_SCRIPT}" _ "$1" "$2"
+}
+
+# --- Test cases ------------------------------------------------------------
+
+Describe 'Given: init-vars.lib.sh sourced in a fresh process'
+  BeforeEach '_setup_env'
+  AfterEach 'remove_temp_dir _TEST_DIR'
+  Describe 'When: PROJECT_ROOT is resolved by the git lookup'
+    Describe 'Then: Task T-01-01 - git lookup is anchored to the lib location'
+      It "[Normal] T-01-01-01: cwd=<tmp>/other (foreign git repo) -> ci-platform root"
+        When call _resolve_root "${_TEST_DIR}/other" "${_IVPR_LIB}"
+        The output should equal "${_CI_ROOT}"
+        The output should not equal "${_OTHER_ROOT}"
+      End
+
+      It "[Normal] T-01-01-02: cwd=ci-platform root -> ci-platform root"
+        When call _resolve_root "${SHELLSPEC_PROJECT_ROOT}" "${_IVPR_LIB}"
+        The output should equal "${_CI_ROOT}"
+      End
+
+      It "[Normal] T-01-01-04: cwd=<tmp>/other (foreign git repo) -> PROJECT_ROOT is a single line"
+        When call _resolve_root "${_TEST_DIR}/other" "${_IVPR_LIB}"
+        The lines of output should equal 1
+      End
+
+      It "[Normal] T-01-01-05: lib copy in <tmp>/repo/a/b/runners/libs (git repo <tmp>/repo), cwd=<tmp>/other -> <tmp>/repo toplevel, not ../.."
+        When call _resolve_root "${_TEST_DIR}/other" "${_NESTED_LIB}"
+        The output should equal "${_NESTED_GIT_ROOT}"
+        The output should not equal "${_NESTED_FALLBACK}"
+        The output should not equal "${_OTHER_ROOT}"
+      End
+    End
+
+    Describe 'Then: Task T-01-03 - a non-git caller cwd does not affect the lookup'
+      It "[Edge] T-01-03-03: cwd=<tmp>/plain (non-git) -> ci-platform root"
+        When call _resolve_root "${_TEST_DIR}/plain" "${_IVPR_LIB}"
+        The output should equal "${_CI_ROOT}"
+      End
+    End
+  End
+
+  Describe 'When: PROJECT_ROOT is preset in the environment'
+    Describe 'Then: Task T-01-01 - explicit PROJECT_ROOT overrides the git lookup'
+      It "[Normal] T-01-01-03: PROJECT_ROOT=/explicit/override, cwd=<tmp>/other -> /explicit/override"
+        When call _resolve_root_with "${_TEST_DIR}/other" "${_IVPR_LIB}" "/explicit/override"
+        The output should equal "/explicit/override"
+      End
+    End
+
+    Describe 'Then: Task T-01-03 - an empty PROJECT_ROOT is treated as unset'
+      It "[Edge] T-01-03-02: PROJECT_ROOT='' (empty), cwd=<tmp>/other -> ci-platform root"
+        When call _resolve_root_with "${_TEST_DIR}/other" "${_IVPR_LIB}" ""
+        The output should equal "${_CI_ROOT}"
+        The output should not equal "${_OTHER_ROOT}"
+      End
+    End
+  End
+
+  Describe 'When: the git lookup fails'
+    Describe 'Then: Task T-01-02 - PROJECT_ROOT falls back to the lib grandparent'
+      It "[Error] T-01-02-01: git stub returns 128, cwd=<tmp>/other -> ci-platform root via ../.."
+        When call _resolve_root_git_fails "${_TEST_DIR}/other" "${_IVPR_LIB}"
+        The output should equal "${_CI_FALLBACK}"
+        The output should not equal "${_OTHER_ROOT}"
+      End
+    End
+  End
+
+  Describe 'When: the lib lives outside any git work tree'
+    Describe 'Then: Task T-01-03 - fallback is not hijacked by the caller cwd repo'
+      It "[Edge] T-01-03-01: lib copy in non-git <tmp>/proj, cwd=<tmp>/other -> <tmp>/proj"
+        When call _resolve_root "${_TEST_DIR}/other" "${_PROJ_LIB}"
+        The output should equal "${_PROJ_ROOT}"
+        The output should not equal "${_OTHER_ROOT}"
       End
     End
   End
