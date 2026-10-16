@@ -9,7 +9,12 @@
 # default: ignore all files
 *
 
+## Repository Specific
+# Allow Templates (for project-starter-template repo)
+!/templates/
+!/templates/**
 
+## General
 # Allow README, LICENSE, CONTRIBUTING
 !**/README*
 !**/LICENSE*
@@ -18,10 +23,6 @@
 # Allow .github directories
 !.github/
 !.github/**
-
-# Allow Templates
-!/templates/
-!/templates/**
 
 # Allow profile (organization README)
 !/profile/
@@ -45,8 +46,8 @@
 !**/dprint.jsonc
 !**/.shellspec
 !**/.mcp.json
-!**/CHANGELOG.md
-!**/Release-Note.md
+!**/CHANGELOG.*
+!**/Release-Note.*
 
 ## Project directories
 # config files
@@ -70,6 +71,9 @@
 !/scripts/**/*.ts
 
 ## AI Agents
+# General
+!**/AGENT.md
+
 # claude code
 !**/CLAUDE*.md
 
@@ -131,12 +135,11 @@ thumbs.db
 
 #   .env files
 **/.env*
+!.env.example
 
 #   temporary directories
 **/temp
-**/temp/
 **/tmp
-**/tmp/
 
 #   node
 **/node_modules/
