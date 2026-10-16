@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# utils.lib.sh — common utility library for runner scripts
+# utils.lib.sh - common utility library for runner scripts
 # Provides helpers shared by multiple runners
 #
 # Copyright (c) 2026- atsushifx <https://github.com/atsushifx>

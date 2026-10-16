@@ -7,7 +7,7 @@
 # This software is released under the MIT License.
 # https://opensource.org/licenses/MIT
 # shellcheck shell=bash
-# args-normalize.spec.sh — BDD spec for argument normalization functions in get-filelist.lib.sh
+# args-normalize.spec.sh - BDD spec for argument normalization functions in get-filelist.lib.sh
 
 Include "${SHELLSPEC_PROJECT_ROOT}/runners/libs/get-filelist.lib.sh"
 

@@ -168,26 +168,26 @@ resolve_spec_files() {
 
   local first_arg="$1"
 
-  # 単一 .spec.sh ファイルはそのまま返す
+  # A single .spec.sh file is returned as-is
   if is_spec_file "$first_arg"; then
     RESOLVED_SPEC_FILES=("$first_arg")
     return 0
   fi
 
-  # glob パス（*.spec.sh を含む glob）は expand_spec_glob で展開
+  # Glob paths (globs containing *.spec.sh) are expanded by expand_spec_glob
   if is_spec_glob "$first_arg"; then
     mapfile -t RESOLVED_SPEC_FILES < <(expand_spec_glob "$first_arg")
     _drop_empty_resolved
     return 0
   fi
 
-  # テスト種別以外 → エラー (stderr)
+  # Not a test type -> error (stderr)
   if ! is_test_type "$first_arg"; then
     printf "Error: Unknown argument '%s'. Expected a test type, spec file, or glob pattern.\n" "$first_arg" >&2
     return 1
   fi
 
-  # テスト種別 → get_spec_files で展開
+  # Test type -> expand with get_spec_files
   local test_type="$1"
   shift
   [[ "$test_type" == "system" ]] && SKIP_INTEGRATION_TESTS=0

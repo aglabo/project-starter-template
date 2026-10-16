@@ -7,7 +7,7 @@
 # This software is released under the MIT License.
 # https://opensource.org/licenses/MIT
 # shellcheck shell=bash
-# get-filelist.spec.sh — BDD spec for get-filelist.lib.sh
+# get-filelist.spec.sh - BDD spec for get-filelist.lib.sh
 
 Include "${SHELLSPEC_PROJECT_ROOT}/runners/libs/__tests__/spec_helper.sh"
 Include "${SHELLSPEC_PROJECT_ROOT}/runners/libs/get-filelist.lib.sh"
@@ -16,7 +16,7 @@ Describe 'T-RUN-GFL: get_filelist()'
   Before 'setup_temp_specs'
   After 'teardown_temp_specs'
 
-  Describe 'フィルタなし'
+  Describe 'no filter'
     It 'T-RUN-GFL-01: returns all spec files'
       When call get_filelist "$TEMP_DIR" "*.spec.sh"
       The output should include '.spec.sh'
@@ -31,7 +31,7 @@ Describe 'T-RUN-GFL: get_filelist()'
     End
   End
 
-  Describe 'str_filter（スラッシュなし引数）'
+  Describe 'str_filter (argument without slash)'
     It 'T-RUN-GFL-03: filters by plain string kv-store'
       When call get_filelist "$TEMP_DIR" "*.spec.sh" "kv-store"
       The output should include 'kv-store'
@@ -46,7 +46,7 @@ Describe 'T-RUN-GFL: get_filelist()'
     End
   End
 
-  Describe 'dir_filter（スラッシュあり引数）'
+  Describe 'dir_filter (argument with slash)'
     It 'T-RUN-GFL-05: restricts to runners/ directory'
       When call get_filelist "$TEMP_DIR" "*.spec.sh" "runners/"
       The output should include 'runners/'
@@ -69,7 +69,7 @@ Describe 'T-RUN-GFL: get_filelist()'
     End
   End
 
-  Describe 'dir_filter + str_filter 組み合わせ'
+  Describe 'dir_filter + str_filter combined'
     It 'T-RUN-GFL-08: combines runners/ + kv-store'
       When call get_filelist "$TEMP_DIR" "*.spec.sh" "runners/" "kv-store"
       The output should include 'kv-store'
@@ -78,7 +78,7 @@ Describe 'T-RUN-GFL: get_filelist()'
     End
   End
 
-  Describe 'バックスラッシュパス対応'
+  Describe 'backslash path support'
     It 'T-RUN-GFL-09: handles backslash dir_filter'
       When call get_filelist "$TEMP_DIR" "*.spec.sh" 'runners\libs\__tests__\unit'
       The output should include '__tests__/unit'
@@ -87,11 +87,49 @@ Describe 'T-RUN-GFL: get_filelist()'
     End
   End
 
-  Describe 'ファイルなし'
+  Describe 'no files'
     It 'T-RUN-GFL-10: returns empty for nonexistent filter'
       When call get_filelist "$TEMP_DIR" "*.spec.sh" "nonexistent-filter-xyz"
       The output should equal ''
       The status should be success
+    End
+  End
+End
+
+# --- Internal helpers -------------------------------------------------------
+
+# Creates the fixtures under _TEST_DIR.
+#   .ignore             : allow-lists .hidden/ so rg lists it, as the repo's .gitignore does for .github/
+#   .hidden/x/a.spec.sh : hidden path (rg output has no ./ prefix)
+#   visible/b.spec.sh   : visible path (rg output gets ./ prefix)
+_setup_env() {
+  make_temp_dir _TEST_DIR || return 1
+  mkdir -p "${_TEST_DIR}/.hidden/x" "${_TEST_DIR}/visible"
+  printf '%s\n' '!.hidden/' > "${_TEST_DIR}/.ignore"
+  : > "${_TEST_DIR}/.hidden/x/a.spec.sh"
+  : > "${_TEST_DIR}/visible/b.spec.sh"
+}
+
+# --- Test cases -------------------------------------------------------------
+
+Describe 'get_filelist'
+  BeforeEach '_setup_env'
+  AfterEach 'remove_temp_dir _TEST_DIR'
+
+  Describe 'Then: Task T-01-01 - leading ./ in dir filters'
+    It '[Normal] T-01-01-01: filter "./.hidden/x" -> ".hidden/x/a.spec.sh"'
+      When call get_filelist "${_TEST_DIR}" "*.spec.sh" "./.hidden/x"
+      The output should equal ".hidden/x/a.spec.sh"
+    End
+
+    It '[Normal] T-01-01-02: filter "./visible" -> "./visible/b.spec.sh"'
+      When call get_filelist "${_TEST_DIR}" "*.spec.sh" "./visible"
+      The output should equal "./visible/b.spec.sh"
+    End
+
+    It '[Normal] T-01-01-03: filter ".hidden/x" -> ".hidden/x/a.spec.sh"'
+      When call get_filelist "${_TEST_DIR}" "*.spec.sh" ".hidden/x"
+      The output should equal ".hidden/x/a.spec.sh"
     End
   End
 End

@@ -1,10 +1,12 @@
 #shellcheck shell=bash
 
+Include "${SHELLSPEC_PROJECT_ROOT}/scripts/__tests__/spec_helper.sh"
+
 Describe 'prepare-commit-msg.sh'
   Include scripts/prepare-commit-msg.sh
 
   Describe 'get_model_command()'
-    # AI_COMMAND はグローバル配列として設定されるため、展開して検証する
+    # AI_COMMAND is set as a global array, so expand it to verify
     command_string() {
       get_model_command "$@" || return $?
       printf '%s' "${AI_COMMAND[*]}"
@@ -23,8 +25,8 @@ Describe 'prepare-commit-msg.sh'
         The status should be success
       End
 
-      # コミットメッセージ生成は作業ツリーを書き換えてはならない。
-      # また --color never はこの後のマーカー抽出を ANSI エスケープから守る。
+      # Generating a commit message must not modify the working tree.
+      # Also, --color never protects the later marker extraction from ANSI escapes.
       It 'runs codex with a read-only sandbox and no color'
         When call command_string "gpt-5"
         The output should include '-s read-only'

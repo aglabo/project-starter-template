@@ -7,45 +7,45 @@
 # This software is released under the MIT License.
 # https://opensource.org/licenses/MIT
 # shellcheck shell=bash
-# utils.lib.spec.sh — BDD spec for utils.lib.sh
+# utils.lib.spec.sh - BDD spec for utils.lib.sh
 
 # cspell:words TMPBASE
 
-# --- テスト基盤 -------------------------------------------------------------
+# --- Test infrastructure -----------------------------------------------------
 
 Include "${SHELLSPEC_PROJECT_ROOT}/runners/libs/__tests__/spec_helper.sh"
 
-# --- テスト対象 -------------------------------------------------------------
+# --- Target under test -------------------------------------------------------
 
 Include "${SHELLSPEC_PROJECT_ROOT}/runners/libs/utils.lib.sh"
 
-# --- 内部ヘルパー -----------------------------------------------------------
+# --- Internal helpers --------------------------------------------------------
 
-# 定数
+# Constants
 
-# 疑似ディレクトリの根。ShellSpec が実行終了時にまとめて消す一時領域に置く
-_RC_FIXTURE_ROOT="${SHELLSPEC_TMPBASE:-${TMPDIR:-/tmp}}/utils-resolve-config-fixture"
+# Root of the fake directories. Placed in the temp area ShellSpec removes when the run ends
+_RC_FIXTURE_ROOT="${SPEC_FIXTURE_BASE}/utils-resolve-config-fixture"
 
-# 存在する XDG_CONFIG_HOME（T-RUN-RC-01 の入力かつ期待値）
+# Existing XDG_CONFIG_HOME (input and expected value of T-RUN-RC-01)
 _RC_XDG_DIR="${_RC_FIXTURE_ROOT}/xdg"
 
-# `.config` を持つ HOME（T-RUN-RC-02/03/05 の入力）
+# HOME with `.config` (input of T-RUN-RC-02/03/05)
 _RC_HOME_WITH_CONFIG="${_RC_FIXTURE_ROOT}/home-with-config"
 
-# _RC_HOME_WITH_CONFIG 配下の `.config`（T-RUN-RC-02/03/05 の期待値）
+# `.config` under _RC_HOME_WITH_CONFIG (expected value of T-RUN-RC-02/03/05)
 _RC_HOME_CONFIG_DIR="${_RC_HOME_WITH_CONFIG}/.config"
 
-# `.config` を持たない HOME（T-RUN-RC-04 の入力）
+# HOME without `.config` (input of T-RUN-RC-04)
 _RC_HOME_WITHOUT_CONFIG="${_RC_FIXTURE_ROOT}/home-without-config"
 
-# 存在しない XDG_CONFIG_HOME（T-RUN-RC-03/04 の入力）
+# Nonexistent XDG_CONFIG_HOME (input of T-RUN-RC-03/04)
 _RC_MISSING_DIR="${_RC_FIXTURE_ROOT}/missing"
 
-# 関数
+# Functions
 
 #
-# @description resolve_global_configdir() 用の疑似ディレクトリを組み立てる。
-#              mkdir -p は冪等なので `--jobs 4` 下で重ねて呼ばれても壊れない
+# @description Build the fake directories for resolve_global_configdir().
+#              mkdir -p is idempotent, so repeated calls under `--jobs 4` are safe
 # @arg none
 # @return 0 when the fixture directories exist
 # @sideeffect Creates _RC_FIXTURE_ROOT and its contents on disk
@@ -54,21 +54,21 @@ _setup_resolve_global_configdir_fixture() {
   mkdir -p "$_RC_XDG_DIR" "$_RC_HOME_CONFIG_DIR" "$_RC_HOME_WITHOUT_CONFIG"
 }
 
-# --- テスト本体 -------------------------------------------------------------
+# --- Test body ---------------------------------------------------------------
 
 #
-# runner スクリプトが共有するユーティリティ lib。
+# Utility lib shared by the runner scripts.
 #
 Describe 'utils.lib.sh'
   #
-  # ユーザー設定ディレクトリの決定。XDG_CONFIG_HOME を優先し、
-  # 無ければ ${HOME}/.config、どちらも無ければ空文字を返す
+  # Resolve the user config directory. Prefers XDG_CONFIG_HOME,
+  # falls back to ${HOME}/.config, and returns an empty string if neither exists
   #
   Describe 'T-RUN-RC: resolve_global_configdir()'
     Before '_setup_resolve_global_configdir_fixture'
 
-    Describe 'When: 正常系'
-      It 'Then: [Normal] T-RUN-RC-01: 存在する XDG_CONFIG_HOME をそのまま返す'
+    Describe 'When: Normal cases'
+      It 'Then: [Normal] T-RUN-RC-01: returns an existing XDG_CONFIG_HOME as is'
         export XDG_CONFIG_HOME="$_RC_XDG_DIR"
         export HOME="$_RC_HOME_WITH_CONFIG"
         When call resolve_global_configdir
@@ -76,7 +76,7 @@ Describe 'utils.lib.sh'
         The status should be success
       End
 
-      It 'Then: [Normal] T-RUN-RC-02: XDG_CONFIG_HOME が未設定なら HOME 配下の .config を返す'
+      It 'Then: [Normal] T-RUN-RC-02: returns .config under HOME when XDG_CONFIG_HOME is unset'
         unset XDG_CONFIG_HOME
         export HOME="$_RC_HOME_WITH_CONFIG"
         When call resolve_global_configdir
@@ -85,8 +85,8 @@ Describe 'utils.lib.sh'
       End
     End
 
-    Describe 'When: 異常系'
-      It 'Then: [Error] T-RUN-RC-03: XDG_CONFIG_HOME が存在しなければ HOME 配下の .config へフォールバックする'
+    Describe 'When: Error cases'
+      It 'Then: [Error] T-RUN-RC-03: falls back to .config under HOME when XDG_CONFIG_HOME does not exist'
         export XDG_CONFIG_HOME="$_RC_MISSING_DIR"
         export HOME="$_RC_HOME_WITH_CONFIG"
         When call resolve_global_configdir
@@ -94,7 +94,7 @@ Describe 'utils.lib.sh'
         The status should be success
       End
 
-      It 'Then: [Error] T-RUN-RC-04: どちらのディレクトリも無ければ空文字を返す'
+      It 'Then: [Error] T-RUN-RC-04: returns an empty string when neither directory exists'
         export XDG_CONFIG_HOME="$_RC_MISSING_DIR"
         export HOME="$_RC_HOME_WITHOUT_CONFIG"
         When call resolve_global_configdir
@@ -103,8 +103,8 @@ Describe 'utils.lib.sh'
       End
     End
 
-    Describe 'When: エッジケース'
-      It 'Then: [Edge] T-RUN-RC-05: 空文字の XDG_CONFIG_HOME は未設定として扱う'
+    Describe 'When: Edge cases'
+      It 'Then: [Edge] T-RUN-RC-05: treats an empty XDG_CONFIG_HOME as unset'
         export XDG_CONFIG_HOME=''
         export HOME="$_RC_HOME_WITH_CONFIG"
         When call resolve_global_configdir

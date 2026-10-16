@@ -35,7 +35,6 @@ main() {
     configFile="${configDir}/linters/markdownlint/.markdownlint-cli2.yaml"
   fi
 
-
   markdownlint "${configFile}" "${targets[@]+"${targets[@]}"}"
 }
 
