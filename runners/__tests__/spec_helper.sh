@@ -6,89 +6,83 @@
 #
 # This software is released under the MIT License.
 # https://opensource.org/licenses/MIT
-# spec_helper.sh - shared test helper for runners/libs tests
+# spec_helper.sh - temporary directory and stub helpers shared by every runners test
+
+# shellcheck shell=bash
+
+# --- Constants --------------------------------------------------------------
+
+# Base directory for build-once fixtures shared across examples.
+# ShellSpec removes SHELLSPEC_TMPBASE wholesale when the run ends, so nothing leaks
+# shellcheck disable=SC2034 # used by runners/libs helpers and specs
+SPEC_FIXTURE_BASE="${SHELLSPEC_TMPBASE:-${TMPDIR:-/tmp}}"
+
+# --- Temporary directories --------------------------------------------------
 
 #
-# @description Build a deterministic tree of fake spec files mirroring the real
-#              repository layout (`__tests__/<type>/`) for testing get_filelist().
-#              The tree is built once per ShellSpec invocation and reused afterwards.
-#              The memo is an on-disk completion marker rather than a shell variable,
-#              because ShellSpec forks a subshell per example and a variable would
-#              never reach the parent shell. The marker is stamped only after every
-#              mkdir and touch has *succeeded*; a failing step aborts the build with a
-#              non-zero return and leaves no marker, so the next caller rebuilds from
-#              scratch instead of latching onto a half-built tree. A spec file running
-#              in parallel (`.shellspec` sets `--jobs 4`) therefore can never mistake
-#              an incomplete tree for a finished one. Two jobs racing while the marker
-#              is still absent is harmless: mkdir -p and touch are idempotent, and each
-#              job enumerates only after its own build completes.
+# @description Create a private temporary directory and store its path in a variable.
+#              Use it for per-example trees that may be mutated; the shared fixture
+#              from setup_temp_specs() is read-only
+# @arg $1 string Name of the variable that receives the directory path
+# @return 0 when the directory was created; 1 otherwise
+# @sideeffect Sets the variable named by $1
+# @sideeffect Creates the directory on disk
 #
-#              Consumer contract: the fixture is a read-only tree shared by every
-#              example of every spec file in the run. Once the marker exists it is
-#              never rebuilt, so any write to it (adding, renaming or deleting a path)
-#              is visible to all later examples. A consumer that needs to mutate a
-#              tree must create its own directory instead of touching this one.
-# @arg none   takes no arguments; the fixture root comes from the environment (below)
-# @return 0 when the fixture is ready; 1 when the tree could not be built
-#         (no completion marker is left behind in that case)
-# @sideeffect Sets TEMP_DIR to the fixture root
-#             (`${SHELLSPEC_TMPBASE:-${TMPDIR:-/tmp}}/deckrd-spec-fixture`)
-# @sideeffect Creates that fixture root on disk, and the `.fixture-ready` marker
-#             inside it, unless that marker is already present
-# @sideeffect Saves the current SPEC_SEARCH_ROOT into ORIG_SPEC_SEARCH_ROOT and
-#             repoints SPEC_SEARCH_ROOT at TEMP_DIR
+make_temp_dir() {
+  local __dir
+  __dir="$(mktemp -d)" || return 1
+  printf -v "$1" '%s' "$__dir"
+}
+
 #
-setup_temp_specs() {
-  local __root="${SHELLSPEC_TMPBASE:-${TMPDIR:-/tmp}}/deckrd-spec-fixture"
-  # Marker name must not match `*.spec.sh`: get_filelist() globs the tree for specs
-  local __ready="${__root}/.fixture-ready"
+# @description Remove directories created by make_temp_dir() and unset their variables.
+#              Variables that are unset or empty are skipped
+# @arg $@ string Names of the variables holding the directory paths
+# @return 0 always
+# @sideeffect Deletes the directories and unsets the variables
+#
+remove_temp_dir() {
+  local __var
+  for __var in "$@"; do
+    if [[ -n "${!__var:-}" ]]; then
+      rm -rf "${!__var}"
+    fi
+    unset "$__var"
+  done
+}
 
-  # shellcheck disable=SC2034
-  ORIG_SPEC_SEARCH_ROOT="${SPEC_SEARCH_ROOT:-}"
-  TEMP_DIR="$__root"
-  # shellcheck disable=SC2034
-  SPEC_SEARCH_ROOT="$TEMP_DIR"
+# --- Stubs ------------------------------------------------------------------
 
-  # Rebuild until the completion marker exists. Testing the root with `-d` instead
-  # would also accept a tree a parallel job is still filling in, yielding a
-  # short spec list. `-f` is a builtin test, not a fork()
-  if [[ ! -f "$__ready" ]]; then
-    # Fake spec files mirroring the real layout (no e2e directory on purpose)
-    local __spec __dir
-    local -A __seen=()
-    local -a __dirs=() __files=()
-    local -a __specs=(
-      "runners/__tests__/unit/args-normalize.spec.sh"
-      "runners/__tests__/unit/kv-store.spec.sh"
-      "runners/__tests__/unit/init.spec.sh"
-      "runners/__tests__/integration/args-normalize.spec.sh"
-      "runners/__tests__/system/runner.spec.sh"
-      "runners/libs/__tests__/unit/get-filelist.spec.sh"
-      "skills/deckrd/skills/deckrd/scripts/__tests__/unit/project.unit.spec.sh"
-      "skills/deckrd/skills/deckrd/scripts/libs/__tests__/functional/kv-store.lib.functional.spec.sh"
-      "skills/deckrd/skills/deckrd/scripts/subcommands/__tests__/unit/generate-doc.unit.spec.sh"
-    )
+#
+# @description Write an executable bash script made of a shebang and the given lines.
+#              Lines are written verbatim, so quote them to defer expansion to run time
+# @arg $1 string Path of the script to write
+# @arg $@ string Body lines (after $1)
+# @return 0 when the script was written and made executable; non-zero otherwise
+# @sideeffect Creates or overwrites the script at $1
+#
+write_bash_stub() {
+  local __path="$1"
+  shift
+  {
+    echo '#!/usr/bin/env bash'
+    printf '%s\n' "$@"
+  } >"$__path" && chmod +x "$__path"
+}
 
-    # Collect unique parent directories and full paths, then materialize the whole
-    # tree with one mkdir and one touch (each fork() costs ~0.2s on Windows/MSYS2)
-    for __spec in "${__specs[@]}"; do
-      __dir="${__root}/${__spec%/*}"
-      [[ -v __seen["$__dir"] ]] || {
-        __seen["$__dir"]=1
-        __dirs+=("$__dir")
-      }
-      __files+=("${__root}/${__spec}")
-    done
-
-    # Fail fast: a partially built tree must not be stamped as complete.
-    # `||` and `return` are shell internals, so this costs no extra fork().
-    # `set -e` is not an option here: ShellSpec does not enable errexit in Before hooks
-    mkdir -p "${__dirs[@]}" || return 1
-    touch "${__files[@]}" || return 1
-    # Stamp completion last and only on success, so the marker always implies a
-    # finished tree. A redirection, not a command: no fork()
-    : >"$__ready" || return 1
-  fi
+#
+# @description Install a ShellSpec stub that only prints its arguments as `[%s]`.
+#              The output shows which arguments reached ShellSpec
+# @arg none
+# @return 0 when the stub is ready
+# @sideeffect Sets _STUB_DIR and _SHELLSPEC_STUB
+# @sideeffect Creates the stub directory and the stub script on disk
+#
+setup_shellspec_stub() {
+  make_temp_dir _STUB_DIR || return 1
+  _SHELLSPEC_STUB="${_STUB_DIR}/shellspec-stub"
+  # shellcheck disable=SC2016 # stub body, expanded when the stub runs
+  write_bash_stub "$_SHELLSPEC_STUB" 'printf "[%s]" "$@"'
 }
 
 #
