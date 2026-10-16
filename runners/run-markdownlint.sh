@@ -18,7 +18,7 @@ set -euo pipefail
 . "${SCRIPT_ROOT}/libs/utils.lib.sh"
 
 # @description Run markdownlint with the global config,
-#              or with markdownlint's own config discovery when the global one is absent
+#              or with the checked-in config when the global one is absent
 # @arg $@ string Paths to lint
 # @exitcode 0 All checks passed
 # @exitcode 1 Lint error
@@ -35,7 +35,7 @@ main() {
     configFile="${configDir}/linters/markdownlint/.markdownlint-cli2.yaml"
   fi
 
-  markdownlint "${configFile}" "${targets[@]+"${targets[@]}"}"
+  markdownlint --config "${configFile}" "${targets[@]+"${targets[@]}"}"
 }
 
 if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
