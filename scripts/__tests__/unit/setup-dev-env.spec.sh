@@ -13,20 +13,28 @@ Describe 'setup-dev-env.sh'
 
   # Stub git: simulate a clone by creating bin/ in the destination (last argument)
   _stub_git_clone_success() {
+    # shellcheck disable=SC2329 # called indirectly from setup_agla_tool()
     git() {
-      eval "_dest=\${$#}"
+      for _dest in "$@"; do :; done
       mkdir -p "$_dest/bin"
     }
   }
-  _stub_git_clone_failure() { git() { return 1; }; }
+  _stub_git_clone_failure() {
+    # shellcheck disable=SC2329 # called indirectly from setup_agla_tool()
+    git() { return 1; }
+  }
 
   # Stub pnpm: simulate install by creating node_modules/.bin under --dir
   _stub_pnpm_install_success() {
+    # shellcheck disable=SC2329 # called indirectly from setup_agla_tool()
     pnpm() {
       mkdir -p "$2/node_modules/.bin"
     }
   }
-  _stub_pnpm_install_failure() { pnpm() { return 1; }; }
+  _stub_pnpm_install_failure() {
+    # shellcheck disable=SC2329 # called indirectly from setup_agla_tool()
+    pnpm() { return 1; }
+  }
 
   Describe 'is_agla_tool_installed()'
     Context 'when the tool is checked out and dependencies are installed'
