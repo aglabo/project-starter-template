@@ -12,6 +12,7 @@
 ## Ignores
 # ignore gitignore
 gitignore: true
+
 # ignore files globs
 ignores:
   - "**/__tests__/**" # ignore test fixtures (raw)chatlog data)
@@ -19,6 +20,9 @@ ignores:
   - ".tools/**"
   - "temp/**"
   - "tmp/**"
+  - "aglabo.github.io/**"
+  - ".github/**"
+  - ".vscode/**"
 
 ## ruleset
 config:
