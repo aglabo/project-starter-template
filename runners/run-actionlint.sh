@@ -7,12 +7,32 @@
 # This software is released under the MIT License.
 # https://opensource.org/licenses/MIT
 
+# shellcheck disable=SC1091
+
 set -euo pipefail
 
-main() {
-  local globalConfig="${XDG_CONFIG_HOME:-${HOME}/.config}"
+# shellcheck source=runners/libs/init-vars.lib.sh
+. "$(dirname "${BASH_SOURCE[0]}")/libs/init-vars.lib.sh"
 
-  jactionlint --config-file "${globalConfig}/jactionlint/jactionlint.yaml" "$@"
+# shellcheck source=runners/libs/utils.lib.sh
+. "${SCRIPT_ROOT}/libs/utils.lib.sh"
+
+# @description Run jactionlint with the global config,
+#              or with the checked-in config when the global one is absent
+# @arg $@ Arguments forwarded to jactionlint
+# @exitcode Exit code of jactionlint
+main() {
+  local configDir
+  configDir="$(resolve_global_configdir)"
+  local configFile
+
+  if [[ -z "$configDir" ]]; then
+    configFile="${PROJECT_ROOT}/configs/jactionlint.yaml"
+  else
+    configFile="${configDir}/jactionlint/jactionlint.yaml"
+  fi
+
+  jactionlint --config-file "$configFile" "$@"
 }
 
 if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
