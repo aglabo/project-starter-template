@@ -11,10 +11,10 @@
 
 set -euo pipefail
 
-# shellcheck source=runners/libs/init-vars.lib.sh
+# Initialize directory variables
 . "$(dirname "${BASH_SOURCE[0]}")/libs/init-vars.lib.sh"
 
-# shellcheck source=runners/libs/wsl.lib.sh
+# include using wsl library
 . "${SCRIPT_ROOT}/libs/wsl.lib.sh"
 
 # Main ShellSpec entry point. The path is relative to PROJECT_ROOT, so it also works as-is on the WSL side
