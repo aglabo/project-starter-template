@@ -11,18 +11,21 @@
 
 set -euo pipefail
 
+# Init variables
 # shellcheck source=runners/libs/init-vars.lib.sh
 . "$(dirname "${BASH_SOURCE[0]}")/libs/init-vars.lib.sh"
 
+# load utility library
 # shellcheck source=runners/libs/utils.lib.sh
 . "${SCRIPT_ROOT}/libs/utils.lib.sh"
 
-# @description Run ghalint (run|act) with the global config,
-#              or with the checked-in config when the global one is absent
+# @description Run ghalint (run|act) with the checked-in config,
+#              or with the global config when the checked-in one is absent
 # @arg $1 string Subcommand: run (workflows) or act (actions)
 # @arg $@ string Remaining arguments forwarded to ghalint
 # @exitcode 0 All checks passed
-# @exitcode 1 Lint error, invalid subcommand, or missing config file
+# @exitcode 1 Lint error or invalid subcommand
+# @exitcode 78 (EXIT_CONFIG_NOT_FOUND) Config file not found
 main() {
   local subcommand="${1:-}"
 
@@ -38,9 +41,14 @@ main() {
 
   local -a args=("$@")
   local configFile
-  configFile="$(resolve_config_file 'linters/ghalint/ghalint.yaml' 'configs/ghalint.yaml')" || return 1
+  local exit_code=0
+  configFile="$(resolve_config_file 'linters/ghalint/ghalint.yaml' 'configs/ghalint.yaml')" || exit_code=$?
+  if [[ $exit_code -ne 0 ]]; then
+    echo "Error: config file not found: configs/ghalint.yaml (local) or linters/ghalint/ghalint.yaml (global config dir)" >&2
+    return "$EXIT_CONFIG_NOT_FOUND"
+  fi
 
-  pnpm exec ghalint "$subcommand" --config "$configFile" "${args[@]+"${args[@]}"}"
+  ghalint "$subcommand" --config "$configFile" "${args[@]+"${args[@]}"}"
 }
 
 if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then

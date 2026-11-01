@@ -11,19 +11,27 @@
 
 set -euo pipefail
 
+# Init directory variables
 # shellcheck source=runners/libs/init-vars.lib.sh
 . "$(dirname "${BASH_SOURCE[0]}")/libs/init-vars.lib.sh"
 
+# load utility library
 # shellcheck source=runners/libs/utils.lib.sh
 . "${SCRIPT_ROOT}/libs/utils.lib.sh"
 
-# @description Run jactionlint with the global config,
-#              or with the checked-in config when the global one is absent
+# @description Run jactionlint with the checked-in config,
+#              or with the global config when the checked-in one is absent
 # @arg $@ Arguments forwarded to jactionlint
-# @exitcode Exit code of jactionlint
+# @exitcode 78 (EXIT_CONFIG_NOT_FOUND) Config file not found
+# @exitcode Exit code of jactionlint otherwise
 main() {
   local configFile
-  configFile="$(resolve_config_file 'jactionlint/jactionlint.yaml' 'configs/jactionlint.yaml')" || return 1
+  local exit_code=0
+  configFile="$(resolve_config_file 'jactionlint/jactionlint.yaml' 'configs/jactionlint.yaml')" || exit_code=$?
+  if [[ $exit_code -ne 0 ]]; then
+    echo "Error: config file not found: configs/jactionlint.yaml (local) or jactionlint/jactionlint.yaml (global config dir)" >&2
+    return "$EXIT_CONFIG_NOT_FOUND"
+  fi
 
   jactionlint --config-file "$configFile" "$@"
 }

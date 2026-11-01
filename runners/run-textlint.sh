@@ -11,21 +11,29 @@
 
 set -euo pipefail
 
+# Init variables
 # shellcheck source=runners/libs/init-vars.lib.sh
 . "$(dirname "${BASH_SOURCE[0]}")/libs/init-vars.lib.sh"
 
+# load utility library
 # shellcheck source=runners/libs/utils.lib.sh
 . "${SCRIPT_ROOT}/libs/utils.lib.sh"
 
-# @description Run textlint with the global config,
-#              or with the checked-in config when the global one is absent
+# @description Run textlint with the checked-in config,
+#              or with the global config when the checked-in one is absent
 # @arg $@ string Paths to lint
 # @exitcode 0 All checks passed
-# @exitcode 1 Lint error or missing config file
+# @exitcode 1 Lint error
+# @exitcode 78 (EXIT_CONFIG_NOT_FOUND) Config file not found
 main() {
   local -a targets=("$@")
   local configFile
-  configFile="$(resolve_config_file 'linters/textlint/textlintrc.yaml' 'configs/textlintrc.yaml')" || return 1
+  local exit_code=0
+  configFile="$(resolve_config_file 'linters/textlint/textlintrc.yaml' 'configs/textlintrc.yaml')" || exit_code=$?
+  if [[ $exit_code -ne 0 ]]; then
+    echo "Error: config file not found: configs/textlintrc.yaml (local) or linters/textlint/textlintrc.yaml (global config dir)" >&2
+    return "$EXIT_CONFIG_NOT_FOUND"
+  fi
 
   textlint --config "$configFile" --cache --cache-location .cache/textlint/textlintcache "${targets[@]+"${targets[@]}"}"
 }
