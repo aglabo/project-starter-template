@@ -170,7 +170,7 @@ Describe 'get_spec_files()'
       Before 'setup_temp_specs'
       After 'teardown_temp_specs'
 
-      It '[Normal] T-EXE-GSF-01: returns spec files under tests/ for all'
+      It '[Normal] T-EXE-GSF-01: returns spec files under __tests__/ for all'
         When call get_spec_files 'all'
         The output should include '.spec.sh'
         The status should be success
