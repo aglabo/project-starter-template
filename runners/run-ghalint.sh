@@ -42,9 +42,9 @@ main() {
   local -a args=("$@")
   local configFile
   local exit_code=0
-  configFile="$(resolve_config_file 'linters/ghalint/ghalint.yaml' 'configs/ghalint.yaml')" || exit_code=$?
+  configFile="$(resolve_config_file 'ghalint.yaml' 'configs/ghalint.yaml')" || exit_code=$?
   if [[ $exit_code -ne 0 ]]; then
-    echo "Error: config file not found: configs/ghalint.yaml (local) or linters/ghalint/ghalint.yaml (global config dir)" >&2
+    echo "Error: config file not found: configs/ghalint.yaml (local) or ghalint.yaml (global config dir)" >&2
     return "$EXIT_CONFIG_NOT_FOUND"
   fi
 

@@ -29,9 +29,9 @@ main() {
   local -a targets=("$@")
   local configFile
   local exit_code=0
-  configFile="$(resolve_config_file 'linters/markdownlint/.markdownlint-cli2.yaml' 'configs/.markdownlint-cli2.yaml')" || exit_code=$?
+  configFile="$(resolve_config_file '.markdownlint-cli2.yaml' 'configs/.markdownlint-cli2.yaml')" || exit_code=$?
   if [[ $exit_code -ne 0 ]]; then
-    echo "Error: config file not found: configs/.markdownlint-cli2.yaml (local) or linters/markdownlint/.markdownlint-cli2.yaml (global config dir)" >&2
+    echo "Error: config file not found: configs/.markdownlint-cli2.yaml (local) or .markdownlint-cli2.yaml (global config dir)" >&2
     return "$EXIT_CONFIG_NOT_FOUND"
   fi
 
