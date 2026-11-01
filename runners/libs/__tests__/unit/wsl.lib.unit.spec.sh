@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# runners/libs/__tests__/unit/wsl.lib.spec.sh
+# runners/libs/__tests__/unit/wsl.lib.unit.spec.sh
 # @(#) : BDD unit tests for wsl.lib.sh
 #
 # Copyright (c) 2026- atsushifx <https://github.com/atsushifx>
@@ -7,7 +7,7 @@
 # This software is released under the MIT License.
 # https://opensource.org/licenses/MIT
 # shellcheck shell=bash
-# wsl.lib.spec.sh - BDD spec for wsl.lib.sh
+# wsl.lib.unit.spec.sh - BDD spec for wsl.lib.sh
 
 # --- Test infrastructure ---------------------------------------------------
 
@@ -21,10 +21,10 @@ Include "${SHELLSPEC_PROJECT_ROOT}/runners/libs/wsl.lib.sh"
 
 # Constants
 
-# `uname -s` values that is_windows_host() must treat as a Windows host (input table for T-RUN-IWH-01)
+# `uname -s` values that is_windows_host() must treat as a Windows host (input table for T-LIB-IWH-01)
 %const _IWH_WINDOWS_OS_NAMES: MINGW64_NT-10.0-26200 MSYS_NT-10.0-26200 CYGWIN_NT-10.0
 
-# `uname -s` values that is_windows_host() must not treat as a Windows host (input table for T-RUN-IWH-02)
+# `uname -s` values that is_windows_host() must not treat as a Windows host (input table for T-LIB-IWH-02)
 %const _IWH_OTHER_OS_NAMES: Linux Darwin
 
 # The lib under test. Kept as an absolute path because the PATH-swapped probe loads it
@@ -40,22 +40,22 @@ _EIW_SCRIPT='runners/exec/shellspec-exec.sh'
 _EIW_STUB_EXIT_CODE=3
 
 # Commands checked by find_missing_wsl_commands() that are callable inside the fake WSL
-# (input for T-RUN-FMW-01/04. Names not listed here are treated as "missing commands")
+# (input for T-LIB-FMW-01/02. Names not listed here are treated as "missing commands")
 _FMW_PRESENT_COMMANDS=('bash' 'git' 'rg')
 
-# Argument list mixing in exactly 1 command absent from the fake WSL (input for T-RUN-FMW-02)
+# Argument list mixing in exactly 1 command absent from the fake WSL (input for T-LIB-FMW-03)
 _FMW_ONE_MISSING_COMMANDS=('bash' 'jq' 'git')
 
-# The entries of _FMW_ONE_MISSING_COMMANDS not callable inside the fake WSL (expected output for T-RUN-FMW-02)
+# The entries of _FMW_ONE_MISSING_COMMANDS not callable inside the fake WSL (expected output for T-LIB-FMW-03)
 _FMW_ONE_MISSING_EXPECTED='jq'
 
-# Argument list mixing in 2 commands absent from the fake WSL (input for T-RUN-FMW-03)
+# Argument list mixing in 2 commands absent from the fake WSL (input for T-LIB-FMW-04)
 _FMW_TWO_MISSING_COMMANDS=('jq' 'bash' 'fzf')
 
-# The entries of _FMW_TWO_MISSING_COMMANDS not callable inside the fake WSL, in argument order (expected output for T-RUN-FMW-03)
+# The entries of _FMW_TWO_MISSING_COMMANDS not callable inside the fake WSL, in argument order (expected output for T-LIB-FMW-04)
 _FMW_TWO_MISSING_EXPECTED=('jq' 'fzf')
 
-# Number of wsl.exe launches. Must stay at this count no matter how many commands are checked (expected value for T-RUN-FMW-04)
+# Number of wsl.exe launches. Must stay at this count no matter how many commands are checked (expected value for T-LIB-FMW-02)
 _FMW_EXPECTED_WSL_CALLS=1
 
 # Functions
@@ -209,13 +209,13 @@ Describe 'wsl.lib.sh'
   # Pure function that decides whether this is a Windows shell environment from `uname -s` alone.
   # It does not call uname itself, so OS names can be fed in from a table
   #
-  Describe 'T-RUN-IWH: is_windows_host()'
+  Describe 'T-LIB-IWH: is_windows_host()'
     # uname -s on Git Bash / MSYS2 / Cygwin indicates a Windows host
     Describe 'When: Normal cases'
       # shellcheck disable=SC2086 # Split the %const table into one word per case
       Parameters:value $_IWH_WINDOWS_OS_NAMES
 
-      It "Then: [Normal] T-RUN-IWH-01: treats OS name $1 as a Windows host"
+      It "[Normal] T-LIB-IWH-01: treats OS name $1 as a Windows host"
         When call is_windows_host "$1"
         The status should be success
       End
@@ -226,7 +226,7 @@ Describe 'wsl.lib.sh'
       # shellcheck disable=SC2086 # Split the %const table into one word per case
       Parameters:value $_IWH_OTHER_OS_NAMES
 
-      It "Then: [Error] T-RUN-IWH-02: does not treat OS name $1 as a Windows host"
+      It "[Error] T-LIB-IWH-02: does not treat OS name $1 as a Windows host"
         When call is_windows_host "$1"
         The status should be failure
       End
@@ -234,7 +234,7 @@ Describe 'wsl.lib.sh'
 
     # Callers that failed to get uname may pass an empty string
     Describe 'When: Edge cases'
-      It 'Then: [Edge] T-RUN-IWH-03: does not treat an empty OS name as a Windows host'
+      It '[Edge] T-LIB-IWH-03: does not treat an empty OS name as a Windows host'
         When call is_windows_host ''
         The status should be failure
       End
@@ -245,19 +245,19 @@ Describe 'wsl.lib.sh'
   # Decides whether wsl.exe can be called from this shell.
   # To avoid depending on the real WSL, verify via a probe with a swapped PATH
   #
-  Describe 'T-RUN-IWA: is_wsl_available()'
+  Describe 'T-LIB-IWA: is_wsl_available()'
     Before '_setup_wsl_path_probe'
     After '_teardown_wsl_path_probe'
 
     Describe 'When: Normal cases'
-      It 'Then: [Normal] T-RUN-IWA-01: returns success when wsl.exe is on PATH'
+      It '[Normal] T-LIB-IWA-01: returns success when wsl.exe is on PATH'
         When run bash "$_WSL_PROBE" "$_WSL_BIN_DIR"
         The status should be success
       End
     End
 
     Describe 'When: Error cases'
-      It 'Then: [Error] T-RUN-IWA-02: returns failure when wsl.exe is not on PATH'
+      It '[Error] T-LIB-IWA-02: returns failure when wsl.exe is not on PATH'
         When run bash "$_WSL_PROBE" "$_EMPTY_BIN_DIR"
         The status should be failure
       End
@@ -268,13 +268,13 @@ Describe 'wsl.lib.sh'
   # Runs a script on WSL. Variables holding Windows-side paths are not passed through;
   # only SKIP_INTEGRATION_TESTS is passed via env(1)
   #
-  Describe 'T-RUN-EIW: exec_in_wsl()'
+  Describe 'T-LIB-EIW: exec_in_wsl()'
     After '_teardown_wsl_exe_stub'
 
     Describe 'When: Normal cases'
       Before '_setup_wsl_exe_stub'
 
-      It 'Then: [Normal] T-RUN-EIW-01: calls wsl.exe with --cd / -e env / bash / script / extra args in order'
+      It '[Normal] T-LIB-EIW-01: calls wsl.exe with --cd / -e env / bash / script / extra args in order'
         # shellcheck disable=SC2034 # Read by exec_in_wsl()
         SKIP_INTEGRATION_TESTS=0
         When call exec_in_wsl "$_EIW_WIN_CWD" "$_EIW_SCRIPT" 'foo.spec.sh' '--repair'
@@ -283,23 +283,23 @@ Describe 'wsl.lib.sh'
       End
     End
 
+    Describe 'When: Error cases'
+      Before '_setup_failing_wsl_exe_stub'
+
+      It '[Error] T-LIB-EIW-02: returns the wsl.exe exit code as-is'
+        When call exec_in_wsl "$_EIW_WIN_CWD" "$_EIW_SCRIPT"
+        The status should equal "$_EIW_STUB_EXIT_CODE"
+      End
+    End
+
     Describe 'When: Edge cases'
       Before '_setup_wsl_exe_stub'
 
-      It 'Then: [Edge] T-RUN-EIW-02: passes 1 when SKIP_INTEGRATION_TESTS is unset'
+      It '[Edge] T-LIB-EIW-03: passes 1 when SKIP_INTEGRATION_TESTS is unset'
         unset SKIP_INTEGRATION_TESTS
         When call exec_in_wsl "$_EIW_WIN_CWD" "$_EIW_SCRIPT"
         The output should equal "[--cd][${_EIW_WIN_CWD}][-e][env][SKIP_INTEGRATION_TESTS=1][bash][${_EIW_SCRIPT}]"
         The status should be success
-      End
-    End
-
-    Describe 'When: Error cases'
-      Before '_setup_failing_wsl_exe_stub'
-
-      It 'Then: [Error] T-RUN-EIW-03: returns the wsl.exe exit code as-is'
-        When call exec_in_wsl "$_EIW_WIN_CWD" "$_EIW_SCRIPT"
-        The status should equal "$_EIW_STUB_EXIT_CODE"
       End
     End
   End
@@ -309,19 +309,19 @@ Describe 'wsl.lib.sh'
   # so it is launched only once regardless of how many commands are checked.
   # To avoid depending on the real WSL, verify via a wsl.exe stub that acts as a fake WSL
   #
-  Describe 'T-RUN-FMW: find_missing_wsl_commands()'
+  Describe 'T-LIB-FMW: find_missing_wsl_commands()'
     Before '_setup_fake_wsl'
     After '_teardown_fake_wsl'
 
     # If the WSL side has everything, there is nothing to tell the caller
     Describe 'When: Normal cases'
-      It 'Then: [Normal] T-RUN-FMW-01: outputs nothing when all are callable inside WSL'
+      It '[Normal] T-LIB-FMW-01: outputs nothing when all are callable inside WSL'
         When call find_missing_wsl_commands "${_FMW_PRESENT_COMMANDS[@]}"
         The output should be blank
         The status should be success
       End
 
-      It 'Then: [Normal] T-RUN-FMW-04: launches wsl.exe only once even when checking multiple commands'
+      It '[Normal] T-LIB-FMW-02: launches wsl.exe only once even when checking multiple commands'
         When call find_missing_wsl_commands "${_FMW_PRESENT_COMMANDS[@]}"
         The value "$(_fake_wsl_call_count)" should equal "$_FMW_EXPECTED_WSL_CALLS"
         The status should be success
@@ -330,13 +330,13 @@ Describe 'wsl.lib.sh'
 
     # Return only the uncallable ones. Must not report available commands mixed in
     Describe 'When: Error cases'
-      It 'Then: [Error] T-RUN-FMW-02: outputs only the commands missing inside WSL'
+      It '[Error] T-LIB-FMW-03: outputs only the commands missing inside WSL'
         When call find_missing_wsl_commands "${_FMW_ONE_MISSING_COMMANDS[@]}"
         The output should equal "$_FMW_ONE_MISSING_EXPECTED"
         The status should be success
       End
 
-      It 'Then: [Error] T-RUN-FMW-03: outputs one per line in argument order when several are missing'
+      It '[Error] T-LIB-FMW-04: outputs one per line in argument order when several are missing'
         When call find_missing_wsl_commands "${_FMW_TWO_MISSING_COMMANDS[@]}"
         The output should equal "$(printf '%s\n' "${_FMW_TWO_MISSING_EXPECTED[@]}")"
         The status should be success

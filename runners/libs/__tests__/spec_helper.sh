@@ -65,12 +65,12 @@ setup_temp_specs() {
     local -A __seen=()
     local -a __dirs=() __files=()
     local -a __specs=(
-      "runners/__tests__/unit/args-normalize.spec.sh"
-      "runners/__tests__/unit/kv-store.spec.sh"
-      "runners/__tests__/unit/init.spec.sh"
-      "runners/__tests__/integration/args-normalize.spec.sh"
-      "runners/__tests__/system/runner.spec.sh"
-      "runners/libs/__tests__/unit/get-filelist.spec.sh"
+      "runners/__tests__/unit/args-normalize.unit.spec.sh"
+      "runners/__tests__/unit/kv-store.unit.spec.sh"
+      "runners/__tests__/unit/init.unit.spec.sh"
+      "runners/__tests__/integration/args-normalize.integration.spec.sh"
+      "runners/__tests__/system/runner.system.spec.sh"
+      "runners/libs/__tests__/unit/get-filelist.unit.spec.sh"
       "skills/deckrd/skills/deckrd/scripts/__tests__/unit/project.unit.spec.sh"
       "skills/deckrd/skills/deckrd/scripts/libs/__tests__/functional/kv-store.lib.functional.spec.sh"
       "skills/deckrd/skills/deckrd/scripts/subcommands/__tests__/unit/generate-doc.unit.spec.sh"

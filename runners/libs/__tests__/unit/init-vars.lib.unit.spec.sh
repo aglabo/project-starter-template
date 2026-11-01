@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# runners/libs/__tests__/unit/init-vars.lib.spec.sh
+# runners/libs/__tests__/unit/init-vars.lib.unit.spec.sh
 # @(#) : BDD unit tests for init-vars.lib.sh
 #
 # Copyright (c) 2026- atsushifx <https://github.com/atsushifx>
@@ -7,7 +7,7 @@
 # This software is released under the MIT License.
 # https://opensource.org/licenses/MIT
 # shellcheck shell=bash
-# init-vars.lib.spec.sh - BDD spec for init-vars.lib.sh
+# init-vars.lib.unit.spec.sh - BDD spec for init-vars.lib.sh
 
 # --- Test harness ----------------------------------------------------------
 
@@ -32,17 +32,17 @@ _IVPR_FIXTURE_ROOT="${SPEC_FIXTURE_BASE}/init-vars-fixture"
 _IVPR_FIXTURE_READY="${_IVPR_FIXTURE_ROOT}/.fixture-ready"
 
 # Fake project root. The value PROJECT_ROOT must resolve to when git is unavailable
-# (expected value for T-RUN-IVPR-03/04/05)
+# (expected value for T-LIB-IVPR-08/09/11)
 _IVPR_FAKE_ROOT="${_IVPR_FIXTURE_ROOT}/root"
 
 # Fixture copy of the lib. Probes source this one
 _IVPR_FIXTURE_LIB="${_IVPR_FAKE_ROOT}/runners/libs/init-vars.lib.sh"
 
-# Probe mimicking a caller directly under `runners/` (depth 1) (input for T-RUN-IVPR-03)
+# Probe mimicking a caller directly under `runners/` (depth 1) (input for T-LIB-IVPR-08)
 _IVPR_SHALLOW_PROBE="${_IVPR_FAKE_ROOT}/runners/probe-shallow.sh"
 
 # Probe mimicking a caller under `runners/exec/` (depth 2)
-# (input for T-RUN-IVPR-01/02/04/05)
+# (input for T-LIB-IVPR-01/02/09/11)
 _IVPR_DEEP_PROBE="${_IVPR_FAKE_ROOT}/runners/exec/probe-deep.sh"
 
 # Probe argument that selects the git success stub. Any other word selects the failure stub
@@ -51,13 +51,13 @@ _IVPR_GIT_OK='git-ok'
 # Probe argument that selects the git failure stub
 _IVPR_GIT_NG='git-ng'
 
-# Path the git success stub returns for `rev-parse --show-toplevel` (expected value for T-RUN-IVPR-01)
+# Path the git success stub returns for `rev-parse --show-toplevel` (expected value for T-LIB-IVPR-01)
 _IVPR_GIT_TOPLEVEL='/fake/git/toplevel'
 
 # Exit code of the git failure stub. 128 is what real git returns outside a repository
 _IVPR_GIT_FAILURE_CODE=128
 
-# PROJECT_ROOT preset by the caller (input and expected value for T-RUN-IVPR-02)
+# PROJECT_ROOT preset by the caller (input and expected value for T-LIB-IVPR-02)
 _IVPR_PRESET_ROOT='/preset/root'
 
 # Probe output line count: exactly 2 lines, PROJECT_ROOT and SCRIPT_ROOT.
@@ -65,11 +65,11 @@ _IVPR_PRESET_ROOT='/preset/root'
 _IVPR_PROBE_LINE_COUNT=2
 
 # SCRIPT_ROOT expected for a caller directly under `runners/` (depth 1).
-# Probes and fixture tree are shared with the PROJECT_ROOT tests (expected value for T-RUN-IVSR-01/02)
+# Probes and fixture tree are shared with the PROJECT_ROOT tests (expected value for T-LIB-IVSR-01/02)
 _IVSR_SHALLOW_SCRIPT_ROOT="${_IVPR_FAKE_ROOT}/runners"
 
 # SCRIPT_ROOT expected for a caller in `runners/exec/` (depth 2).
-# Differs from `_IVPR_FAKE_ROOT` used for PROJECT_ROOT (expected value for T-RUN-IVSR-03)
+# Differs from `_IVPR_FAKE_ROOT` used for PROJECT_ROOT (expected value for T-LIB-IVSR-03)
 _IVSR_DEEP_SCRIPT_ROOT="${_IVPR_FAKE_ROOT}/runners/exec"
 
 # Functions
@@ -124,113 +124,12 @@ _setup_init_vars_fixture() {
   : >"$_IVPR_FIXTURE_READY" || return 1
 }
 
-# --- Test cases ------------------------------------------------------------
-
-#
-# Shared variable initialization lib sourced by every runner script.
-#
-Describe 'init-vars.lib.sh'
-  #
-  # Determining the project root. Use git output when git is available; otherwise
-  # derive it from the lib location. It must not depend on the caller directory depth
-  #
-  Describe 'T-RUN-IVPR: PROJECT_ROOT'
-    Before '_setup_init_vars_fixture'
-
-    # Inside a git repository git is authoritative, and a caller-provided value takes precedence over it
-    Describe 'When: Normal cases'
-      It 'Then: [Normal] T-RUN-IVPR-01: uses git output as-is when git is available'
-        When run bash "$_IVPR_DEEP_PROBE" "$_IVPR_GIT_OK"
-        The line 1 of output should equal "$_IVPR_GIT_TOPLEVEL"
-        The lines of output should equal "$_IVPR_PROBE_LINE_COUNT"
-        The status should be success
-      End
-
-      It 'Then: [Normal] T-RUN-IVPR-02: does not overwrite PROJECT_ROOT provided by the caller'
-        When run env "PROJECT_ROOT=${_IVPR_PRESET_ROOT}" bash "$_IVPR_DEEP_PROBE" "$_IVPR_GIT_OK"
-        The line 1 of output should equal "$_IVPR_PRESET_ROOT"
-        The lines of output should equal "$_IVPR_PROBE_LINE_COUNT"
-        The status should be success
-      End
-    End
-
-    # When git is unavailable, derive the project root from the lib location.
-    # It must resolve to the same root whatever directory depth the caller is at
-    Describe 'When: Error cases'
-      It 'Then: [Error] T-RUN-IVPR-03: derives the project root from a caller directly under runners/ when git fails'
-        When run bash "$_IVPR_SHALLOW_PROBE" "$_IVPR_GIT_NG"
-        The line 1 of output should equal "$_IVPR_FAKE_ROOT"
-        The lines of output should equal "$_IVPR_PROBE_LINE_COUNT"
-        The status should be success
-      End
-
-      It 'Then: [Error] T-RUN-IVPR-04: derives the project root from a caller in runners/exec/ when git fails'
-        When run bash "$_IVPR_DEEP_PROBE" "$_IVPR_GIT_NG"
-        The line 1 of output should equal "$_IVPR_FAKE_ROOT"
-        The lines of output should equal "$_IVPR_PROBE_LINE_COUNT"
-        The status should be success
-      End
-    End
-
-    # A variable the caller exported as an empty string still means no value
-    Describe 'When: Edge cases'
-      It 'Then: [Edge] T-RUN-IVPR-05: treats an empty PROJECT_ROOT as unset and falls back'
-        When run env 'PROJECT_ROOT=' bash "$_IVPR_DEEP_PROBE" "$_IVPR_GIT_NG"
-        The line 1 of output should equal "$_IVPR_FAKE_ROOT"
-        The lines of output should equal "$_IVPR_PROBE_LINE_COUNT"
-        The status should be success
-      End
-    End
-  End
-
-  #
-  # Determining the caller script directory. It must keep pointing to the script that
-  # sourced the lib, not to the lib itself. Even though the PROJECT_ROOT fallback is
-  # based on the lib location, the meaning of SCRIPT_ROOT must not change
-  #
-  Describe 'T-RUN-IVSR: SCRIPT_ROOT'
-    Before '_setup_init_vars_fixture'
-
-    # Even when git is available, SCRIPT_ROOT must not be pulled toward the git answer
-    Describe 'When: Normal cases'
-      It 'Then: [Normal] T-RUN-IVSR-01: points to the directory of a caller directly under runners/ when git is available'
-        When run bash "$_IVPR_SHALLOW_PROBE" "$_IVPR_GIT_OK"
-        The line 2 of output should equal "$_IVSR_SHALLOW_SCRIPT_ROOT"
-        The lines of output should equal "$_IVPR_PROBE_LINE_COUNT"
-        The status should be success
-      End
-    End
-
-    # The git fallback only concerns the PROJECT_ROOT line and does not affect SCRIPT_ROOT
-    Describe 'When: Error cases'
-      It 'Then: [Error] T-RUN-IVSR-02: stays the directory of a caller directly under runners/ when git fails'
-        When run bash "$_IVPR_SHALLOW_PROBE" "$_IVPR_GIT_NG"
-        The line 2 of output should equal "$_IVSR_SHALLOW_SCRIPT_ROOT"
-        The lines of output should equal "$_IVPR_PROBE_LINE_COUNT"
-        The status should be success
-      End
-    End
-
-    # When the caller is one level deeper, SCRIPT_ROOT and PROJECT_ROOT are different directories
-    Describe 'When: Edge cases'
-      It 'Then: [Edge] T-RUN-IVSR-03: points to runners/exec for a caller in runners/exec/'
-        When run bash "$_IVPR_DEEP_PROBE" "$_IVPR_GIT_NG"
-        The line 2 of output should equal "$_IVSR_DEEP_SCRIPT_ROOT"
-        The lines of output should equal "$_IVPR_PROBE_LINE_COUNT"
-        The status should be success
-      End
-    End
-  End
-End
-
-# --- Internal helpers ------------------------------------------------------
-
 # Child-process body: cd to $1, source the lib $2, print the resolved PROJECT_ROOT.
 # shellcheck disable=SC2016 # expanded by the child shell, not here
 _CHILD_SCRIPT='cd "$1" && . "$2" && printf "%s\n" "$PROJECT_ROOT"'
 
 # Child-process prefix replacing git with a stub that always fails
-# (_IVPR_GIT_FAILURE_CODE); used by T-01-02-01.
+# (_IVPR_GIT_FAILURE_CODE); used by T-LIB-IVPR-10.
 _GIT_FAIL_STUB="git() { return ${_IVPR_GIT_FAILURE_CODE}; }; "
 
 # Creates the fixtures under _TEST_DIR and resolves the expected roots.
@@ -282,76 +181,168 @@ _resolve_root_with() {
 
 # --- Test cases ------------------------------------------------------------
 
-Describe 'Given: init-vars.lib.sh sourced in a fresh process'
-  BeforeEach '_setup_env'
-  AfterEach 'remove_temp_dir _TEST_DIR'
-  Describe 'When: PROJECT_ROOT is resolved by the git lookup'
-    Describe 'Then: Task T-01-01 - git lookup is anchored to the lib location'
-      It "[Normal] T-01-01-01: cwd=<tmp>/other (foreign git repo) -> ci-platform root"
-        When call _resolve_root "${_TEST_DIR}/other" "${_IVPR_LIB}"
-        The output should equal "${_CI_ROOT}"
-        The output should not equal "${_OTHER_ROOT}"
+#
+# Shared variable initialization lib sourced by every runner script.
+#
+Describe 'init-vars.lib.sh'
+  #
+  # Determining the project root. Use git output when git is available; otherwise
+  # derive it from the lib location. It must not depend on the caller directory depth.
+  # Checked both through the fixture probes and by sourcing the lib in a fresh process
+  #
+  Describe 'T-LIB-IVPR: PROJECT_ROOT'
+    Before '_setup_init_vars_fixture'
+
+    # Inside a git repository git is authoritative, and a caller-provided value takes precedence over it
+    Describe 'When: Normal cases'
+      It '[Normal] T-LIB-IVPR-01: uses git output as-is when git is available'
+        When run bash "$_IVPR_DEEP_PROBE" "$_IVPR_GIT_OK"
+        The line 1 of output should equal "$_IVPR_GIT_TOPLEVEL"
+        The lines of output should equal "$_IVPR_PROBE_LINE_COUNT"
+        The status should be success
       End
 
-      It "[Normal] T-01-01-02: cwd=ci-platform root -> ci-platform root"
-        When call _resolve_root "${SHELLSPEC_PROJECT_ROOT}" "${_IVPR_LIB}"
-        The output should equal "${_CI_ROOT}"
+      It '[Normal] T-LIB-IVPR-02: does not overwrite PROJECT_ROOT provided by the caller'
+        When run env "PROJECT_ROOT=${_IVPR_PRESET_ROOT}" bash "$_IVPR_DEEP_PROBE" "$_IVPR_GIT_OK"
+        The line 1 of output should equal "$_IVPR_PRESET_ROOT"
+        The lines of output should equal "$_IVPR_PROBE_LINE_COUNT"
+        The status should be success
       End
 
-      It "[Normal] T-01-01-04: cwd=<tmp>/other (foreign git repo) -> PROJECT_ROOT is a single line"
-        When call _resolve_root "${_TEST_DIR}/other" "${_IVPR_LIB}"
-        The lines of output should equal 1
-      End
+      # Only these examples use the _TEST_DIR fixture tree
+      Describe 'Fixture: foreign/plain/proj trees'
+        Before '_setup_env'
+        After 'remove_temp_dir _TEST_DIR'
 
-      It "[Normal] T-01-01-05: lib copy in <tmp>/repo/a/b/runners/libs (git repo <tmp>/repo), cwd=<tmp>/other -> <tmp>/repo toplevel, not ../.."
-        When call _resolve_root "${_TEST_DIR}/other" "${_NESTED_LIB}"
-        The output should equal "${_NESTED_GIT_ROOT}"
-        The output should not equal "${_NESTED_FALLBACK}"
-        The output should not equal "${_OTHER_ROOT}"
+        It "[Normal] T-LIB-IVPR-03: cwd=<tmp>/other (foreign git repo) -> ci-platform root, git lookup anchored to the lib location"
+          When call _resolve_root "${_TEST_DIR}/other" "${_IVPR_LIB}"
+          The output should equal "${_CI_ROOT}"
+          The output should not equal "${_OTHER_ROOT}"
+        End
+
+        It "[Normal] T-LIB-IVPR-04: cwd=ci-platform root -> ci-platform root"
+          When call _resolve_root "${SHELLSPEC_PROJECT_ROOT}" "${_IVPR_LIB}"
+          The output should equal "${_CI_ROOT}"
+        End
+
+        It "[Normal] T-LIB-IVPR-05: cwd=<tmp>/other (foreign git repo) -> PROJECT_ROOT is a single line"
+          When call _resolve_root "${_TEST_DIR}/other" "${_IVPR_LIB}"
+          The lines of output should equal 1
+        End
+
+        It "[Normal] T-LIB-IVPR-06: lib copy in <tmp>/repo/a/b/runners/libs (git repo <tmp>/repo), cwd=<tmp>/other -> <tmp>/repo toplevel, not ../.."
+          When call _resolve_root "${_TEST_DIR}/other" "${_NESTED_LIB}"
+          The output should equal "${_NESTED_GIT_ROOT}"
+          The output should not equal "${_NESTED_FALLBACK}"
+          The output should not equal "${_OTHER_ROOT}"
+        End
+
+        It "[Normal] T-LIB-IVPR-07: PROJECT_ROOT=/explicit/override, cwd=<tmp>/other -> /explicit/override, overriding the git lookup"
+          When call _resolve_root_with "${_TEST_DIR}/other" "${_IVPR_LIB}" "/explicit/override"
+          The output should equal "/explicit/override"
+        End
       End
     End
 
-    Describe 'Then: Task T-01-03 - a non-git caller cwd does not affect the lookup'
-      It "[Edge] T-01-03-03: cwd=<tmp>/plain (non-git) -> ci-platform root"
-        When call _resolve_root "${_TEST_DIR}/plain" "${_IVPR_LIB}"
-        The output should equal "${_CI_ROOT}"
+    # When git is unavailable, derive the project root from the lib location.
+    # It must resolve to the same root whatever directory depth the caller is at
+    Describe 'When: Error cases'
+      It '[Error] T-LIB-IVPR-08: derives the project root from a caller directly under runners/ when git fails'
+        When run bash "$_IVPR_SHALLOW_PROBE" "$_IVPR_GIT_NG"
+        The line 1 of output should equal "$_IVPR_FAKE_ROOT"
+        The lines of output should equal "$_IVPR_PROBE_LINE_COUNT"
+        The status should be success
+      End
+
+      It '[Error] T-LIB-IVPR-09: derives the project root from a caller in runners/exec/ when git fails'
+        When run bash "$_IVPR_DEEP_PROBE" "$_IVPR_GIT_NG"
+        The line 1 of output should equal "$_IVPR_FAKE_ROOT"
+        The lines of output should equal "$_IVPR_PROBE_LINE_COUNT"
+        The status should be success
+      End
+
+      # Only these examples use the _TEST_DIR fixture tree
+      Describe 'Fixture: foreign/plain/proj trees'
+        Before '_setup_env'
+        After 'remove_temp_dir _TEST_DIR'
+
+        It "[Error] T-LIB-IVPR-10: git stub returns 128, cwd=<tmp>/other -> ci-platform root via ../.."
+          When call _resolve_root_git_fails "${_TEST_DIR}/other" "${_IVPR_LIB}"
+          The output should equal "${_CI_FALLBACK}"
+          The output should not equal "${_OTHER_ROOT}"
+        End
+      End
+    End
+
+    # A variable the caller exported as an empty string still means no value
+    Describe 'When: Edge cases'
+      It '[Edge] T-LIB-IVPR-11: treats an empty PROJECT_ROOT as unset and falls back'
+        When run env 'PROJECT_ROOT=' bash "$_IVPR_DEEP_PROBE" "$_IVPR_GIT_NG"
+        The line 1 of output should equal "$_IVPR_FAKE_ROOT"
+        The lines of output should equal "$_IVPR_PROBE_LINE_COUNT"
+        The status should be success
+      End
+
+      # Only these examples use the _TEST_DIR fixture tree
+      Describe 'Fixture: foreign/plain/proj trees'
+        Before '_setup_env'
+        After 'remove_temp_dir _TEST_DIR'
+
+        It "[Edge] T-LIB-IVPR-12: cwd=<tmp>/plain (non-git) -> ci-platform root, unaffected by the caller cwd"
+          When call _resolve_root "${_TEST_DIR}/plain" "${_IVPR_LIB}"
+          The output should equal "${_CI_ROOT}"
+        End
+
+        It "[Edge] T-LIB-IVPR-13: PROJECT_ROOT='' (empty, treated as unset), cwd=<tmp>/other -> ci-platform root"
+          When call _resolve_root_with "${_TEST_DIR}/other" "${_IVPR_LIB}" ""
+          The output should equal "${_CI_ROOT}"
+          The output should not equal "${_OTHER_ROOT}"
+        End
+
+        It "[Edge] T-LIB-IVPR-14: lib copy in non-git <tmp>/proj, cwd=<tmp>/other -> <tmp>/proj, fallback not hijacked by the caller cwd repo"
+          When call _resolve_root "${_TEST_DIR}/other" "${_PROJ_LIB}"
+          The output should equal "${_PROJ_ROOT}"
+          The output should not equal "${_OTHER_ROOT}"
+        End
       End
     End
   End
 
-  Describe 'When: PROJECT_ROOT is preset in the environment'
-    Describe 'Then: Task T-01-01 - explicit PROJECT_ROOT overrides the git lookup'
-      It "[Normal] T-01-01-03: PROJECT_ROOT=/explicit/override, cwd=<tmp>/other -> /explicit/override"
-        When call _resolve_root_with "${_TEST_DIR}/other" "${_IVPR_LIB}" "/explicit/override"
-        The output should equal "/explicit/override"
+  #
+  # Determining the caller script directory. It must keep pointing to the script that
+  # sourced the lib, not to the lib itself. Even though the PROJECT_ROOT fallback is
+  # based on the lib location, the meaning of SCRIPT_ROOT must not change
+  #
+  Describe 'T-LIB-IVSR: SCRIPT_ROOT'
+    Before '_setup_init_vars_fixture'
+
+    # Even when git is available, SCRIPT_ROOT must not be pulled toward the git answer
+    Describe 'When: Normal cases'
+      It '[Normal] T-LIB-IVSR-01: points to the directory of a caller directly under runners/ when git is available'
+        When run bash "$_IVPR_SHALLOW_PROBE" "$_IVPR_GIT_OK"
+        The line 2 of output should equal "$_IVSR_SHALLOW_SCRIPT_ROOT"
+        The lines of output should equal "$_IVPR_PROBE_LINE_COUNT"
+        The status should be success
       End
     End
 
-    Describe 'Then: Task T-01-03 - an empty PROJECT_ROOT is treated as unset'
-      It "[Edge] T-01-03-02: PROJECT_ROOT='' (empty), cwd=<tmp>/other -> ci-platform root"
-        When call _resolve_root_with "${_TEST_DIR}/other" "${_IVPR_LIB}" ""
-        The output should equal "${_CI_ROOT}"
-        The output should not equal "${_OTHER_ROOT}"
+    # The git fallback only concerns the PROJECT_ROOT line and does not affect SCRIPT_ROOT
+    Describe 'When: Error cases'
+      It '[Error] T-LIB-IVSR-02: stays the directory of a caller directly under runners/ when git fails'
+        When run bash "$_IVPR_SHALLOW_PROBE" "$_IVPR_GIT_NG"
+        The line 2 of output should equal "$_IVSR_SHALLOW_SCRIPT_ROOT"
+        The lines of output should equal "$_IVPR_PROBE_LINE_COUNT"
+        The status should be success
       End
     End
-  End
 
-  Describe 'When: the git lookup fails'
-    Describe 'Then: Task T-01-02 - PROJECT_ROOT falls back to the lib grandparent'
-      It "[Error] T-01-02-01: git stub returns 128, cwd=<tmp>/other -> ci-platform root via ../.."
-        When call _resolve_root_git_fails "${_TEST_DIR}/other" "${_IVPR_LIB}"
-        The output should equal "${_CI_FALLBACK}"
-        The output should not equal "${_OTHER_ROOT}"
-      End
-    End
-  End
-
-  Describe 'When: the lib lives outside any git work tree'
-    Describe 'Then: Task T-01-03 - fallback is not hijacked by the caller cwd repo'
-      It "[Edge] T-01-03-01: lib copy in non-git <tmp>/proj, cwd=<tmp>/other -> <tmp>/proj"
-        When call _resolve_root "${_TEST_DIR}/other" "${_PROJ_LIB}"
-        The output should equal "${_PROJ_ROOT}"
-        The output should not equal "${_OTHER_ROOT}"
+    # When the caller is one level deeper, SCRIPT_ROOT and PROJECT_ROOT are different directories
+    Describe 'When: Edge cases'
+      It '[Edge] T-LIB-IVSR-03: points to runners/exec for a caller in runners/exec/'
+        When run bash "$_IVPR_DEEP_PROBE" "$_IVPR_GIT_NG"
+        The line 2 of output should equal "$_IVSR_DEEP_SCRIPT_ROOT"
+        The lines of output should equal "$_IVPR_PROBE_LINE_COUNT"
+        The status should be success
       End
     End
   End

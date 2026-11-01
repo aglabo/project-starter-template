@@ -15,19 +15,22 @@ readonly _UTILS_LIB_SH=1
 # shellcheck disable=SC2034 # read by the runner scripts that source this file
 readonly EXIT_CONFIG_NOT_FOUND=78
 
+# Directory under the user config directory holding the user-shared config repository
+readonly GLOBAL_CONFIGS_DIRNAME='global-configs'
+
 #
-# @description Resolve the global (user) config directory.
-#              Use XDG_CONFIG_HOME when it points to an existing directory,
-#              otherwise fall back to ${HOME}/.config when it exists
+# @description Resolve the global (user-shared) config directory.
+#              Use ${XDG_CONFIG_HOME}/global-configs when it exists,
+#              otherwise fall back to ${HOME}/.config/global-configs when it exists
 # @stdout Path to the config directory; nothing when no directory exists
 # @exitcode 0 Config directory found
 # @exitcode 1 Config directory not found
 #
 resolve_global_configdir() {
-  local __xdg_config="${XDG_CONFIG_HOME:-}"
-  local __home_config="${HOME:-}/.config"
+  local __xdg_config="${XDG_CONFIG_HOME:-}/${GLOBAL_CONFIGS_DIRNAME}"
+  local __home_config="${HOME:-}/.config/${GLOBAL_CONFIGS_DIRNAME}"
 
-  if [[ -n "$__xdg_config" && -d "$__xdg_config" ]]; then
+  if [[ -n "${XDG_CONFIG_HOME:-}" && -d "$__xdg_config" ]]; then
     echo "$__xdg_config"
   elif [[ -n "${HOME:-}" && -d "$__home_config" ]]; then
     echo "$__home_config"
