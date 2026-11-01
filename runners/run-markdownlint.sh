@@ -12,9 +12,11 @@
 set -euo pipefail
 
 # Init variables
+# shellcheck source=runners/libs/init-vars.lib.sh
 . "$(dirname "${BASH_SOURCE[0]}")/libs/init-vars.lib.sh"
 
 # load utility library
+# shellcheck source=runners/libs/utils.lib.sh
 . "${SCRIPT_ROOT}/libs/utils.lib.sh"
 
 # @description Run markdownlint with the checked-in config,
