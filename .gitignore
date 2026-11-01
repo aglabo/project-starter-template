@@ -105,8 +105,10 @@
 !**/.gitignore
 
 
-## Deny rules (keep last)
-# default deny rules
+# ------------------------------------------------------------ ##
+##  Re-exclude: secrets and generated files                      ##
+##  Must stay last: these rules undo the broad allow rules above ##
+## ------------------------------------------------------------ ##
 
 #   OS specific files
 .DS_Store
@@ -136,6 +138,16 @@ thumbs.db
 #   .env files
 **/.env*
 !.env.example
+
+
+#   API keys / credentials
+**/*.key
+**/*.pem
+**/*.p12
+**/*.pfx
+**/*apikey*
+**/*api-key*
+**/*api_key*
 
 #   temporary directories
 **/temp
