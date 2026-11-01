@@ -61,8 +61,19 @@ _setup_resolve_global_configdir_fixture() {
 #
 Describe 'utils.lib.sh'
   #
+  # Exit code constants shared by the runner scripts
+  #
+  Describe 'T-RUN-EC: exit code constants'
+    Describe 'When: Normal cases'
+      It 'Then: [Normal] T-RUN-EC-01: EXIT_CONFIG_NOT_FOUND is 78 (EX_CONFIG)'
+        The value "$EXIT_CONFIG_NOT_FOUND" should equal 78
+      End
+    End
+  End
+
+  #
   # Resolve the user config directory. Prefers XDG_CONFIG_HOME,
-  # falls back to ${HOME}/.config, and returns an empty string if neither exists
+  # falls back to ${HOME}/.config, and fails with no output if neither exists
   #
   Describe 'T-RUN-RC: resolve_global_configdir()'
     Before '_setup_resolve_global_configdir_fixture'
@@ -94,12 +105,12 @@ Describe 'utils.lib.sh'
         The status should be success
       End
 
-      It 'Then: [Error] T-RUN-RC-04: returns an empty string when neither directory exists'
+      It 'Then: [Error] T-RUN-RC-04: prints nothing and fails when neither directory exists'
         export XDG_CONFIG_HOME="$_RC_MISSING_DIR"
         export HOME="$_RC_HOME_WITHOUT_CONFIG"
         When call resolve_global_configdir
         The output should equal ""
-        The status should be success
+        The status should be failure
       End
     End
 
