@@ -1,40 +1,40 @@
-#shellcheck shell=sh
+# shellcheck shell=bash
 
 Include "${SHELLSPEC_PROJECT_ROOT}/scripts/__tests__/spec_helper.sh"
 
 Describe 'greeting.sh'
   Include scripts/greeting.sh
 
-  Describe 'greeting()'
-    Context 'with valid input'
-      It 'outputs greeting with simple name'
+  Describe 'T-SCR-GRT: greeting()'
+    Describe 'When: Normal cases'
+      It '[Normal] T-SCR-GRT-01: outputs greeting with simple name'
         When call greeting "World"
         The output should eq "Hello, World!!"
         The status should be success
       End
 
-      It 'outputs greeting with name containing spaces'
+      It '[Normal] T-SCR-GRT-02: outputs greeting with name containing spaces'
         When call greeting "John Doe"
         The output should eq "Hello, John Doe!!"
         The status should be success
       End
 
-      It 'outputs greeting with special characters'
+      It '[Normal] T-SCR-GRT-03: outputs greeting with special characters'
         When call greeting "User123"
         The output should eq "Hello, User123!!"
         The status should be success
       End
     End
 
-    Context 'with invalid input'
-      It 'returns error when no arguments provided'
+    Describe 'When: Error cases'
+      It '[Error] T-SCR-GRT-04: returns error when no arguments provided'
         When call greeting
         The error should include "Error:"
         The error should include "Name parameter is required"
         The status should eq 1
       End
 
-      It 'returns error when empty string provided'
+      It '[Error] T-SCR-GRT-05: returns error when empty string provided'
         When call greeting ""
         The error should include "Error:"
         The error should include "Name parameter is required"

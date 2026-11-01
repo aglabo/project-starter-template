@@ -42,6 +42,8 @@ main() {
     targets=(".")
   fi
   targets=("${targets[@]//\\//}")
+  # Spec files are skipped by .editorconfig ([**/*.spec.sh] ignore) only during directory walks;
+  # spec files given explicitly are passed to shfmt as-is
   case "$mode" in
   list) (cd "$PROJECT_ROOT" && shfmt -ln bash -i 2 -l -- "${targets[@]}") ;;
   format) (cd "$PROJECT_ROOT" && shfmt -ln bash -i 2 -w -- "${targets[@]}") ;;

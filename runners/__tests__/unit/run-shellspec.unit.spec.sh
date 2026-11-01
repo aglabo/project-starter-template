@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# runners/__tests__/unit/run-shellspec.spec.sh
+# runners/__tests__/unit/run-shellspec.unit.spec.sh
 # @(#) : BDD unit tests for run-shellspec.sh
 #
 # Copyright (c) 2026- atsushifx <https://github.com/atsushifx>
@@ -7,7 +7,7 @@
 # This software is released under the MIT License.
 # https://opensource.org/licenses/MIT
 # shellcheck shell=bash
-# run-shellspec.spec.sh - BDD spec for run-shellspec.sh
+# run-shellspec.unit.spec.sh - BDD spec for run-shellspec.sh
 
 # --- Test infrastructure ----------------------------------------------------
 
@@ -173,8 +173,8 @@ Describe 'run-shellspec.sh'
   #
   Describe 'T-RUN-SUW: should_use_wsl()'
     # Use WSL when launched from a Windows shell and not disabled
-    Describe 'When: normal cases'
-      It 'Then: [Normal] T-RUN-SUW-01: decides to use WSL on a Windows host with SHELLSPEC_NO_WSL unset'
+    Describe 'When: Normal cases'
+      It '[Normal] T-RUN-SUW-01: decides to use WSL on a Windows host with SHELLSPEC_NO_WSL unset'
         unset SHELLSPEC_NO_WSL
         When call should_use_wsl "$_WINDOWS_OS_NAME"
         The status should be success
@@ -182,8 +182,8 @@ Describe 'run-shellspec.sh'
     End
 
     # SHELLSPEC_NO_WSL=1 explicitly disables the WSL path
-    Describe 'When: error cases'
-      It 'Then: [Error] T-RUN-SUW-02: does not use WSL even on a Windows host when SHELLSPEC_NO_WSL=1'
+    Describe 'When: Error cases'
+      It '[Error] T-RUN-SUW-02: does not use WSL even on a Windows host when SHELLSPEC_NO_WSL=1'
         # shellcheck disable=SC2034 # read by should_use_wsl()
         SHELLSPEC_NO_WSL=1
         When call should_use_wsl "$_WINDOWS_OS_NAME"
@@ -193,7 +193,7 @@ Describe 'run-shellspec.sh'
       # shellcheck disable=SC2086 # split the %const table into one case per word
       Parameters:value $_SUW_OTHER_OS_NAMES
 
-      It "Then: [Error] T-RUN-SUW-03: does not use WSL for OS name $1"
+      It "[Error] T-RUN-SUW-03: does not use WSL for OS name $1"
         unset SHELLSPEC_NO_WSL
         When call should_use_wsl "$1"
         The status should be failure
@@ -201,11 +201,11 @@ Describe 'run-shellspec.sh'
     End
 
     # Only `1` disables it; any other value keeps the WSL path
-    Describe 'When: edge cases'
+    Describe 'When: Edge cases'
       # shellcheck disable=SC2086 # split the %const table into one case per word
       Parameters:value $_SUW_KEEP_WSL_FLAGS
 
-      It "Then: [Edge] T-RUN-SUW-04: does not disable the WSL path when SHELLSPEC_NO_WSL is $1"
+      It "[Edge] T-RUN-SUW-04: does not disable the WSL path when SHELLSPEC_NO_WSL is $1"
         _set_no_wsl_flag "$1"
         When call should_use_wsl "$_WINDOWS_OS_NAME"
         The status should be success
@@ -221,8 +221,8 @@ Describe 'run-shellspec.sh'
     After '_teardown_dispatch_stubs'
 
     # On non-Windows hosts, run the executor in this shell as before
-    Describe 'When: normal cases'
-      It 'Then: [Normal] T-RUN-DSP-01: forwards arguments unchanged to run_local on a non-Windows host'
+    Describe 'When: Normal cases'
+      It '[Normal] T-RUN-DSP-01: forwards arguments unchanged to run_local on a non-Windows host'
         _setup_dispatch_stubs "$_WSL_MISSING"
         When call dispatch "$_LOCAL_OS_NAME" "$_SPEC_ARG" "$_OPTION_ARG"
         The output should equal "[run_local]${_FORWARDED_ARGS_OUTPUT}"
@@ -230,7 +230,7 @@ Describe 'run-shellspec.sh'
         The status should be success
       End
 
-      It 'Then: [Normal] T-RUN-DSP-02: calls exec_in_wsl with PROJECT_ROOT and the executor path prepended on a Windows host'
+      It '[Normal] T-RUN-DSP-02: calls exec_in_wsl with PROJECT_ROOT and the executor path prepended on a Windows host'
         _setup_dispatch_stubs "$_WSL_AVAILABLE"
         When call dispatch "$_WINDOWS_OS_NAME" "$_SPEC_ARG" "$_OPTION_ARG"
         The output should equal "[exec_in_wsl][${PROJECT_ROOT}][${_EXPECTED_EXEC_SCRIPT}]${_FORWARDED_ARGS_OUTPUT}"
@@ -238,7 +238,7 @@ Describe 'run-shellspec.sh'
         The status should be success
       End
 
-      It 'Then: [Normal] T-RUN-DSP-06: calls exec_in_wsl without warnings when no commands are missing'
+      It '[Normal] T-RUN-DSP-03: calls exec_in_wsl without warnings when no commands are missing'
         _setup_dispatch_stubs "$_WSL_AVAILABLE"
         When call dispatch "$_WINDOWS_OS_NAME" "$_SPEC_ARG" "$_OPTION_ARG"
         The output should start with '[exec_in_wsl]'
@@ -248,8 +248,8 @@ Describe 'run-shellspec.sh'
     End
 
     # On Windows without a callable wsl.exe, do not run silently; report the reason in one line
-    Describe 'When: error cases'
-      It 'Then: [Error] T-RUN-DSP-03: fails with a one-line error on a Windows host that cannot invoke wsl.exe'
+    Describe 'When: Error cases'
+      It '[Error] T-RUN-DSP-04: fails with a one-line error on a Windows host that cannot invoke wsl.exe'
         _setup_dispatch_stubs "$_WSL_MISSING"
         When call dispatch "$_WINDOWS_OS_NAME" "$_SPEC_ARG" "$_OPTION_ARG"
         The lines of stderr should equal 1
@@ -258,19 +258,19 @@ Describe 'run-shellspec.sh'
         The status should equal 1
       End
 
-      It 'Then: [Error] T-RUN-DSP-04: returns the run_local exit code unchanged on the local path'
+      It '[Error] T-RUN-DSP-05: returns the run_local exit code unchanged on the local path'
         _setup_failing_dispatch_stubs "$_WSL_MISSING"
         When call dispatch "$_LOCAL_OS_NAME" "$_SPEC_ARG" "$_OPTION_ARG"
         The status should equal "$_DSP_STUB_EXIT_CODE"
       End
 
-      It 'Then: [Error] T-RUN-DSP-05: returns the exec_in_wsl exit code unchanged on the WSL path'
+      It '[Error] T-RUN-DSP-06: returns the exec_in_wsl exit code unchanged on the WSL path'
         _setup_failing_dispatch_stubs "$_WSL_AVAILABLE"
         When call dispatch "$_WINDOWS_OS_NAME" "$_SPEC_ARG" "$_OPTION_ARG"
         The status should equal "$_DSP_STUB_EXIT_CODE"
       End
 
-      It 'Then: [Error] T-RUN-DSP-07: fails with a one-line error and does not launch WSL when a required command is missing in WSL'
+      It '[Error] T-RUN-DSP-07: fails with a one-line error and does not launch WSL when a required command is missing in WSL'
         _setup_missing_commands_stubs "$_WSL_AVAILABLE"
         When call dispatch "$_WINDOWS_OS_NAME" "$_SPEC_ARG" "$_OPTION_ARG"
         The lines of stderr should equal 1
@@ -290,8 +290,8 @@ Describe 'run-shellspec.sh'
     After 'teardown_shellspec_stub'
 
     # With WSL disabled, the executor runs in this shell on any host
-    Describe 'When: normal cases'
-      It 'Then: [Normal] T-RUN-MSL-01: with SHELLSPEC_NO_WSL=1, arguments reach ShellSpec through the executor'
+    Describe 'When: Normal cases'
+      It '[Normal] T-RUN-MSL-01: with SHELLSPEC_NO_WSL=1, arguments reach ShellSpec through the executor'
         When run env SHELLSPEC="$_SHELLSPEC_STUB" SHELLSPEC_NO_WSL=1 bash "$SCRIPT" "$_SPEC_ARG"
         The output should equal "[${_SPEC_ARG}]"
         The status should be success

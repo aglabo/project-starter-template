@@ -27,9 +27,9 @@ set -euo pipefail
 main() {
   local configFile
   local exit_code=0
-  configFile="$(resolve_config_file 'jactionlint/jactionlint.yaml' 'configs/jactionlint.yaml')" || exit_code=$?
+  configFile="$(resolve_config_file 'jactionlint.yaml' 'configs/jactionlint.yaml')" || exit_code=$?
   if [[ $exit_code -ne 0 ]]; then
-    echo "Error: config file not found: configs/jactionlint.yaml (local) or jactionlint/jactionlint.yaml (global config dir)" >&2
+    echo "Error: config file not found: configs/jactionlint.yaml (local) or ${GLOBAL_CONFIGS_DIRNAME}/jactionlint.yaml (global)" >&2
     return "$EXIT_CONFIG_NOT_FOUND"
   fi
 

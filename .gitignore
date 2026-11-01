@@ -70,6 +70,13 @@
 !/scripts/**/*.sh
 !/scripts/**/*.ts
 
+# Documents
+!/docs/
+!/docs/**/
+!/docs/**/*.md
+!/docs/**/*.mdx
+
+
 ## AI Agents
 # General
 !**/AGENT.md
@@ -78,8 +85,6 @@
 !**/CLAUDE*.md
 
 # allowlist details: .claude/.gitignore
-!.claude/
-!**/CLAUDE*.md
 !.claude/
 !.claude/agents/
 !.claude/agents/**
