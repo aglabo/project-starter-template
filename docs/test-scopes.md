@@ -23,9 +23,12 @@ description: テストコードのテスト ID (`T-<scope>-<target>-NN`) が使�
 | ----- | -------------------------- |
 | `DSP` | `run-shellspec.sh` `dispatch()`       |
 | `MAL` | `run-actionlint.sh` `main()`          |
+| `MGL` | `run-ghalint.sh` `main()`             |
+| `MML` | `run-markdownlint.sh` `main()`        |
 | `MSC` | `run-shellcheck.sh` `main()`          |
 | `MSF` | `run-shfmt.sh` `main()`               |
 | `MSL` | `run-shellspec.sh` `main()`           |
+| `MTL` | `run-textlint.sh` `main()`            |
 | `SUW` | `run-shellspec.sh` `should_use_wsl()` |
 
 ## EXE
