@@ -8,19 +8,19 @@ description: テストコードのテスト ID (`T-<scope>-<target>-NN`) が使�
 このリポジトリは Deckrd のモジュール構成を採らないため、テスト ID の `scope` をこの表で宣言する。
 テスト ID の書式は `T-<scope>-<target>-<連番>` とし、グループ名が `T-<scope>-<target>` を、ケース名が連番付きの ID を宣言する。
 
-| `test_scope` | 対象                           | `owns`                                                      |
-| ------------ | ------------------------------ | ----------------------------------------------------------- |
-| `RUN`        | ランナースクリプト             | `runners/*.sh`, `runners/__tests__/**`                      |
-| `EXE`        | ShellSpec 実行スクリプト       | `runners/exec/**`                                           |
-| `LIB`        | ランナー共有ライブラリ         | `runners/libs/**`                                           |
-| `SCR`        | 開発用スクリプト               | `scripts/**`                                                |
+| `test_scope` | 対象                     | `owns`                                 |
+| ------------ | ------------------------ | -------------------------------------- |
+| `RUN`        | ランナースクリプト       | `runners/*.sh`, `runners/__tests__/**` |
+| `EXE`        | ShellSpec 実行スクリプト | `runners/exec/**`                      |
+| `LIB`        | ランナー共有ライブラリ   | `runners/libs/**`                      |
+| `SCR`        | 開発用スクリプト         | `scripts/**`                           |
 
 ## RUN
 
 ### テスト対象の略語
 
-| 略語  | 対象                       |
-| ----- | -------------------------- |
+| 略語  | 対象                                  |
+| ----- | ------------------------------------- |
 | `DSP` | `run-shellspec.sh` `dispatch()`       |
 | `MAL` | `run-actionlint.sh` `main()`          |
 | `MGL` | `run-ghalint.sh` `main()`             |
@@ -50,28 +50,28 @@ description: テストコードのテスト ID (`T-<scope>-<target>-NN`) が使�
 
 ### テスト対象の略語
 
-| 略語   | 対象                                                   |
-| ------ | ------------------------------------------------------ |
-| `ATF`  | `get-filelist.lib.sh` `args_to_filter()`               |
-| `EC`   | `utils.lib.sh` 終了コード定数                          |
-| `EIW`  | `wsl.lib.sh` `exec_in_wsl()`                           |
-| `FMW`  | `wsl.lib.sh` `find_missing_wsl_commands()`             |
-| `GFL`  | `get-filelist.lib.sh` `get_filelist()`                 |
-| `IGP`  | `get-filelist.lib.sh` `is_glob_pattern()`              |
-| `IVPR` | `init-vars.lib.sh` `PROJECT_ROOT`                      |
-| `IVSR` | `init-vars.lib.sh` `SCRIPT_ROOT`                       |
-| `IWA`  | `wsl.lib.sh` `is_wsl_available()`                      |
-| `IWH`  | `wsl.lib.sh` `is_windows_host()`                       |
-| `NP`   | `get-filelist.lib.sh` `normalize_path()`               |
-| `RC`   | `utils.lib.sh` `resolve_global_configdir()`            |
-| `RCF`  | `utils.lib.sh` `resolve_config_file()`                 |
+| 略語   | 対象                                        |
+| ------ | ------------------------------------------- |
+| `ATF`  | `get-filelist.lib.sh` `args_to_filter()`    |
+| `EC`   | `utils.lib.sh` 終了コード定数               |
+| `EIW`  | `wsl.lib.sh` `exec_in_wsl()`                |
+| `FMW`  | `wsl.lib.sh` `find_missing_wsl_commands()`  |
+| `GFL`  | `get-filelist.lib.sh` `get_filelist()`      |
+| `IGP`  | `get-filelist.lib.sh` `is_glob_pattern()`   |
+| `IVPR` | `init-vars.lib.sh` `PROJECT_ROOT`           |
+| `IVSR` | `init-vars.lib.sh` `SCRIPT_ROOT`            |
+| `IWA`  | `wsl.lib.sh` `is_wsl_available()`           |
+| `IWH`  | `wsl.lib.sh` `is_windows_host()`            |
+| `NP`   | `get-filelist.lib.sh` `normalize_path()`    |
+| `RC`   | `utils.lib.sh` `resolve_global_configdir()` |
+| `RCF`  | `utils.lib.sh` `resolve_config_file()`      |
 
 ## SCR
 
 ### テスト対象の略語
 
-| 略語   | 対象                                         |
-| ------ | -------------------------------------------- |
+| 略語   | 対象                                          |
+| ------ | --------------------------------------------- |
 | `GMC`  | `prepare-commit-msg.sh` `get_model_command()` |
 | `GRT`  | `greeting.sh` `greeting()`                    |
 | `IATI` | `setup-dev-env.sh` `is_agla_tool_installed()` |
