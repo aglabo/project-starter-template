@@ -12,6 +12,7 @@ Include "${SHELLSPEC_PROJECT_ROOT}/runners/run-shfmt.sh"
 _setup_env() {
   _TEST_DIR=$(mktemp -d)
   _STUB_LOG=$(mktemp)
+  # shellcheck disable=SC2034 # read by main() (cd "$PROJECT_ROOT")
   PROJECT_ROOT="${_TEST_DIR}"
 }
 

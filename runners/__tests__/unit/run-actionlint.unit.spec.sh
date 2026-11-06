@@ -12,6 +12,7 @@ Include "${SHELLSPEC_PROJECT_ROOT}/runners/run-actionlint.sh"
 # Points PROJECT_ROOT at _TEST_DIR so the repository's configs/jactionlint.yaml is not found.
 _setup_env() {
   _TEST_DIR=$(mktemp -d)
+  # shellcheck disable=SC2034 # read by main() via get_config_path in utils.lib.sh
   PROJECT_ROOT="${_TEST_DIR}"
   _STUB_LOG=$(mktemp)
   _STUB_RC=0
@@ -145,6 +146,7 @@ Describe 'T-RUN-MAL: run-actionlint.sh main()'
     End
 
     It "[Edge] T-RUN-MAL-10: main \"my flow.yml\" -> forwarded as a single argument"
+      # shellcheck disable=SC2034 # read by main() via utils.lib.sh
       XDG_CONFIG_HOME="${_TEST_DIR}/xdg"
       _create_global_config "${_TEST_DIR}/xdg"
       When call main "my flow.yml"

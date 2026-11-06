@@ -1,11 +1,12 @@
-# yaml-language-server: $schema=https://raw.githubusercontent.com/jdx/jactionlint/main/schema/jactionlint-config.json
 # src: ./configs/jactionlint.yaml
-# @(#) : ghalint configuration file
+# @(#) : jactionlint configuration file
 #
-# Copyright (c) 2025- atsushifx <https://github.com/atsushifx>
+# Copyright (c) 2026- atsushifx <https://github.com/atsushifx>
 #
 # This software is released under the MIT License.
 # https://opensource.org/licenses/MIT
+
+# yaml-language-server: $schema=https://raw.githubusercontent.com/jdx/jactionlint/main/schema/jactionlint-config.json
 
 # Profile
 profile: default

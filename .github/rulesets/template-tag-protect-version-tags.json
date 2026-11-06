@@ -1,0 +1,22 @@
+{
+  "name": "protect-version-tags",
+  "target": "tag",
+  "source_type": "Repository",
+  "source": "aglabo/.github",
+  "enforcement": "active",
+  "conditions": {
+    "ref_name": {
+      "exclude": [],
+      "include": [
+        "refs/tags/v*.*.*",
+        "refs/tags/r*.*.*"
+      ]
+    }
+  },
+  "rules": [
+    { "type": "deletion" },
+    { "type": "non_fast_forward" },
+    { "type": "update" }
+  ],
+  "bypass_actors": []
+}

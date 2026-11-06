@@ -44,7 +44,7 @@ jobs:
     steps:
       - name: Checkout repository
         id: target-checkout
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        uses: actions/checkout@v7.0.1
         with:
           persist-credentials: false
 
@@ -71,7 +71,7 @@ jobs:
       - name: Validate environment
         id: env-validation
         if: steps.shellspec-install.outcome == 'success'
-        uses: aglabo/ci-platform/.github/actions/ca-validate-environment@2defa5a5403dfe0dbaa7fa64c8ccb4a1c4e6625e # v0.4.0
+        uses: aglabo/ci-platform/.github/actions/ca-validate-environment@v0.6.0
         with:
           actions-type: read
           additional-apps: |
