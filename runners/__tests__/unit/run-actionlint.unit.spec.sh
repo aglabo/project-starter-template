@@ -12,7 +12,7 @@ Include "${SHELLSPEC_PROJECT_ROOT}/runners/run-actionlint.sh"
 # Points PROJECT_ROOT at _TEST_DIR so the repository's configs/jactionlint.yaml is not found.
 _setup_env() {
   _TEST_DIR=$(mktemp -d)
-  # shellcheck disable=SC2034 # read by main() via get_config_path in utils.lib.sh
+  # shellcheck disable=SC2034 # read by main() via resolve_config_file in utils.lib.sh
   PROJECT_ROOT="${_TEST_DIR}"
   _STUB_LOG=$(mktemp)
   _STUB_RC=0
@@ -105,12 +105,22 @@ Describe 'T-RUN-MAL: run-actionlint.sh main()'
       The line 3 of contents of file "${_STUB_LOG}" should equal "a.yml"
     End
 
-    It "[Error] T-RUN-MAL-06: no config locally or globally -> returns 78, reports config file not found, jactionlint not called"
+    It "[Error] T-RUN-MAL-06: no config locally or globally -> returns 78, reports the global-configs directory candidates, jactionlint not called"
       XDG_CONFIG_HOME="${_TEST_DIR}/xdg"
       HOME="${_TEST_DIR}/home"
       When call main a.yml
       The status should equal 78
-      The stderr should include "config file not found"
+      The stderr should equal "Error: config file not found: ${_TEST_DIR}/configs/jactionlint.yaml (local), no global-configs directory: ${_TEST_DIR}/xdg/global-configs, ${_TEST_DIR}/home/.config/global-configs (global)"
+      The contents of file "${_STUB_LOG}" should equal ""
+    End
+
+    It "[Error] T-RUN-MAL-12: global-configs exists without jactionlint.yaml -> returns 78, reports the config file candidates, jactionlint not called"
+      XDG_CONFIG_HOME="${_TEST_DIR}/xdg"
+      HOME="${_TEST_DIR}/home"
+      mkdir -p "${_TEST_DIR}/xdg/global-configs"
+      When call main a.yml
+      The status should equal 78
+      The stderr should equal "Error: config file not found: ${_TEST_DIR}/configs/jactionlint.yaml (local), ${_TEST_DIR}/xdg/global-configs/jactionlint.yaml, ${_TEST_DIR}/home/.config/global-configs/jactionlint.yaml (global)"
       The contents of file "${_STUB_LOG}" should equal ""
     End
   End
@@ -162,6 +172,16 @@ Describe 'T-RUN-MAL: run-actionlint.sh main()'
       When call main
       The status should equal 0
       The line 2 of contents of file "${_STUB_LOG}" should equal "${_TEST_DIR}/configs/jactionlint.yaml"
+    End
+
+    It "[Edge] T-RUN-MAL-13: <tmp>/xdg/global-configs lacks the file, <tmp>/home/.config/global-configs has it -> the HOME config is used"
+      XDG_CONFIG_HOME="${_TEST_DIR}/xdg"
+      HOME="${_TEST_DIR}/home"
+      mkdir -p "${_TEST_DIR}/xdg/global-configs"
+      _create_global_config "${_TEST_DIR}/home/.config"
+      When call main a.yml
+      The status should equal 0
+      The line 2 of contents of file "${_STUB_LOG}" should equal "${_TEST_DIR}/home/.config/global-configs/jactionlint.yaml"
     End
   End
 End
