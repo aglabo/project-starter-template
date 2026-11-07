@@ -311,9 +311,11 @@ Describe 'expand_spec_glob()'
     End
 
     Describe 'When: Error cases'
-      It '[Error] T-EXE-ESG-02: exits with 0 and warns for non-matching glob'
+      # Reporting the unmatched glob is main()'s job, so the expansion itself stays silent
+      It '[Error] T-EXE-ESG-02: exits with 0 and prints nothing for non-matching glob'
         When call expand_spec_glob 'runners/libs/__tests__/unit/nonexistent*.spec.sh'
-        The stderr should include 'Warning'
+        The output should be blank
+        The stderr should be blank
         The status should be success
       End
     End
@@ -388,33 +390,56 @@ Describe 'T-EXE-RSF: resolve_spec_files()'
     End
   End
 
+  # Failures are reported through the exit code and globals only; main() writes the messages
   Describe 'When: Error cases'
-    It '[Error] T-EXE-RSF-10: exits with failure for unknown test type'
+    It '[Error] T-EXE-RSF-10: returns 2 and records an unknown test type without writing to stderr'
       When call resolve_spec_files 'unknowntype'
-      The stderr should include "Error: Unknown argument 'unknowntype'"
+      The variable UNKNOWN_SPEC_ARG should equal 'unknowntype'
       The value "${#RESOLVED_SPEC_FILES[@]}" should equal '0'
-      The status should be failure
+      The stderr should be blank
+      The status should equal 2
     End
 
-    It '[Error] T-EXE-RSF-11: reports missing arguments on stderr'
+    It '[Error] T-EXE-RSF-11: returns 1 for missing arguments without writing to stderr'
       When call resolve_spec_files
-      The stderr should include 'Error: No arguments given.'
       The value "${#RESOLVED_SPEC_FILES[@]}" should equal '0'
-      The status should be failure
+      The stderr should be blank
+      The status should equal 1
     End
 
     It '[Error] T-EXE-RSF-12: rejects a non-spec argument that follows a spec file'
       When call resolve_spec_files 'foo.spec.sh' 'unit'
-      The stderr should include "Error: Unknown argument 'unit'"
+      The variable UNKNOWN_SPEC_ARG should equal 'unit'
       The value "${#RESOLVED_SPEC_FILES[@]}" should equal '0'
-      The status should be failure
+      The stderr should be blank
+      The status should equal 2
     End
 
     # The fixture has no e2e directory (intentionally omitted by runners/libs/__tests__/spec_helper.sh)
-    It '[Error] T-EXE-RSF-13: warns and succeeds when no spec matches the type'
+    It '[Error] T-EXE-RSF-13: succeeds silently with an empty result when no spec matches the type'
       When call resolve_spec_files 'e2e'
-      The stderr should include "No spec files found for test type 'e2e'"
       The value "${#RESOLVED_SPEC_FILES[@]}" should equal '0'
+      The stderr should be blank
+      The status should be success
+    End
+
+    It '[Error] T-EXE-RSF-14: records a glob that matches nothing and keeps the other targets'
+      When call resolve_spec_files 'foo.spec.sh' 'runners/libs/__tests__/unit/nonexistent*.spec.sh'
+      The value "${RESOLVED_SPEC_FILES[*]}" should equal 'foo.spec.sh'
+      The value "${UNMATCHED_SPEC_GLOBS[*]}" should equal 'runners/libs/__tests__/unit/nonexistent*.spec.sh'
+      The stderr should be blank
+      The status should be success
+    End
+  End
+
+  # Error state from a previous call must not leak into the next one
+  Describe 'When: Edge cases'
+    It '[Edge] T-EXE-RSF-15: clears UNKNOWN_SPEC_ARG and UNMATCHED_SPEC_GLOBS from a previous call'
+      UNKNOWN_SPEC_ARG='stale'
+      UNMATCHED_SPEC_GLOBS=('stale*.spec.sh')
+      When call resolve_spec_files 'foo.spec.sh'
+      The variable UNKNOWN_SPEC_ARG should equal ''
+      The value "${#UNMATCHED_SPEC_GLOBS[@]}" should equal '0'
       The status should be success
     End
   End
@@ -479,6 +504,29 @@ Describe 'T-EXE-MRS: main()'
       The stderr should include "Unknown argument 'unknowntype'"
       The output should be blank
       The status should equal 1
+    End
+
+    # resolve_spec_files() stays silent, so the warning must come from main()
+    It '[Error] T-EXE-MRS-13: warns about a glob that matches nothing and exits 0 without running ShellSpec'
+      When run env SPEC_SEARCH_ROOT="$TEMP_DIR" SHELLSPEC="$_SHELLSPEC_STUB" bash "$SCRIPT" 'nonexistent/*.spec.sh'
+      The stderr should equal "Warning: No spec files found matching glob 'nonexistent/*.spec.sh'"
+      The output should be blank
+      The status should be success
+    End
+
+    # The fixture has no e2e directory (intentionally omitted by runners/libs/__tests__/spec_helper.sh)
+    It '[Error] T-EXE-MRS-14: warns about a test type with no spec and exits 0 without running ShellSpec'
+      When run env SPEC_SEARCH_ROOT="$TEMP_DIR" SHELLSPEC="$_SHELLSPEC_STUB" bash "$SCRIPT" 'e2e'
+      The stderr should equal "Warning: No spec files found for test type 'e2e'"
+      The output should be blank
+      The status should be success
+    End
+
+    It '[Error] T-EXE-MRS-15: warns about an unmatched glob and still runs the other spec files'
+      When run env SPEC_SEARCH_ROOT="$TEMP_DIR" SHELLSPEC="$_SHELLSPEC_STUB" bash "$SCRIPT" 'foo.spec.sh' 'nonexistent/*.spec.sh'
+      The stderr should equal "Warning: No spec files found matching glob 'nonexistent/*.spec.sh'"
+      The output should equal '[foo.spec.sh]'
+      The status should be success
     End
   End
 
