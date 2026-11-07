@@ -41,22 +41,22 @@ Describe 'T-RUN-MSC: run-shellcheck.sh main()'
   BeforeEach '_setup_env'
   AfterEach '_cleanup_env'
 
-  # A directory scan prunes .tools and scans every other directory
+  # A directory scan prunes node_modules and .tools and skips *.spec.sh
   Describe 'When: Normal cases'
-    It "[Normal] T-RUN-MSC-01: <tmp>/node_modules/pkg/x.sh and <tmp>/a.sh are passed"
+    It "[Normal] T-RUN-MSC-01: <tmp>/node_modules/pkg/x.sh is not passed, <tmp>/a.sh is"
       _make_files "a.sh" "node_modules/pkg/x.sh"
       When call main "${_TEST_DIR}"
       The status should equal 0
       The contents of file "${_STUB_LOG}" should include "${_TEST_DIR}/a.sh"
-      The contents of file "${_STUB_LOG}" should include "${_TEST_DIR}/node_modules/pkg/x.sh"
+      The contents of file "${_STUB_LOG}" should not include "${_TEST_DIR}/node_modules/pkg/x.sh"
     End
 
-    It "[Normal] T-RUN-MSC-02: <tmp>/sub/node_modules/pkg/x.sh and <tmp>/a.sh are passed"
+    It "[Normal] T-RUN-MSC-02: <tmp>/sub/node_modules/pkg/x.sh is not passed, <tmp>/a.sh is"
       _make_files "a.sh" "sub/node_modules/pkg/x.sh"
       When call main "${_TEST_DIR}"
       The status should equal 0
       The contents of file "${_STUB_LOG}" should include "${_TEST_DIR}/a.sh"
-      The contents of file "${_STUB_LOG}" should include "${_TEST_DIR}/sub/node_modules/pkg/x.sh"
+      The contents of file "${_STUB_LOG}" should not include "${_TEST_DIR}/sub/node_modules/pkg/x.sh"
     End
 
     It "[Normal] T-RUN-MSC-03: <tmp>/.tools/tool/y.sh is not passed, <tmp>/a.sh is"
@@ -80,6 +80,14 @@ Describe 'T-RUN-MSC: run-shellcheck.sh main()'
       The status should equal 0
       The contents of file "${_STUB_LOG}" should include "${_TEST_DIR}/lib/b.sh"
     End
+
+    It "[Normal] T-RUN-MSC-10: <tmp>/__tests__/unit/a.unit.spec.sh is not passed in a directory scan, <tmp>/a.sh is"
+      _make_files "a.sh" "__tests__/unit/a.unit.spec.sh"
+      When call main "${_TEST_DIR}"
+      The status should equal 0
+      The contents of file "${_STUB_LOG}" should include "${_TEST_DIR}/a.sh"
+      The contents of file "${_STUB_LOG}" should not include "${_TEST_DIR}/__tests__/unit/a.unit.spec.sh"
+    End
   End
 
   Describe 'When: Error cases'
@@ -91,7 +99,8 @@ Describe 'T-RUN-MSC: run-shellcheck.sh main()'
     End
   End
 
-  # .sh files at the boundary of the exclusion patterns: only */.tools/* in a directory scan is excluded
+  # .sh files at the boundary of the exclusion patterns: node_modules/.tools are pruned only in directory scans,
+  # *.spec.sh is skipped both in directory scans and when given explicitly
   Describe 'When: Edge cases'
     It "[Edge] T-RUN-MSC-07: only <tmp>/.tools/tool/y.sh exists -> No .sh files found, shellcheck not called"
       _make_files ".tools/tool/y.sh"
@@ -113,6 +122,30 @@ Describe 'T-RUN-MSC: run-shellcheck.sh main()'
       When call main "${_TEST_DIR}/.tools/tool/y.sh"
       The status should equal 0
       The contents of file "${_STUB_LOG}" should include "${_TEST_DIR}/.tools/tool/y.sh"
+    End
+
+    It "[Edge] T-RUN-MSC-11: <tmp>/a.spec.sh given as a file is not passed, <tmp>/a.sh given with it is"
+      _make_files "a.sh" "a.spec.sh"
+      When call main "${_TEST_DIR}/a.sh" "${_TEST_DIR}/a.spec.sh"
+      The status should equal 0
+      The contents of file "${_STUB_LOG}" should include "${_TEST_DIR}/a.sh"
+      The contents of file "${_STUB_LOG}" should not include "${_TEST_DIR}/a.spec.sh"
+    End
+
+    It "[Edge] T-RUN-MSC-12: only spec files given -> No .sh files found, shellcheck not called"
+      _make_files "a.spec.sh"
+      When call main "${_TEST_DIR}/a.spec.sh"
+      The status should equal 0
+      The stderr should include "No .sh files found."
+      The contents of file "${_STUB_LOG}" should equal ""
+    End
+
+    It "[Edge] T-RUN-MSC-13: only <tmp>/node_modules/pkg/x.sh exists -> No .sh files found, shellcheck not called"
+      _make_files "node_modules/pkg/x.sh"
+      When call main "${_TEST_DIR}"
+      The status should equal 0
+      The stderr should include "No .sh files found."
+      The contents of file "${_STUB_LOG}" should equal ""
     End
   End
 End
