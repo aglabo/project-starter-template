@@ -1,0 +1,1 @@
+../../runners/run-ghalint.sh
