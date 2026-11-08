@@ -36,16 +36,16 @@ jobs:
     name: Actionlint
     permissions:
       contents: read
-    uses: aglabo/ci-platform/.github/workflows/ru-qa-actionlint.yml@24960dadb7bb87bc471d1bb85609a04b190ce4e0 # v0.6.0
+    uses: aglabo/ci-platform/.github/workflows/ru-qa-actionlint.yml@76bf81b8f8ef67234ab5d3361ba5f30e0646a284 # v0.6.1
 
   ghalint:
     name: Ghalint
     permissions:
       contents: read
-    uses: aglabo/ci-platform/.github/workflows/ru-qa-ghalint.yml@24960dadb7bb87bc471d1bb85609a04b190ce4e0 # v0.6.0
+    uses: aglabo/ci-platform/.github/workflows/ru-qa-ghalint.yml@76bf81b8f8ef67234ab5d3361ba5f30e0646a284 # v0.6.1
 
   actions-lock:
     name: Actions Lock
     permissions:
       contents: read
-    uses: aglabo/ci-platform/.github/workflows/ru-qa-actions-lock.yml@24960dadb7bb87bc471d1bb85609a04b190ce4e0 # v0.6.0
+    uses: aglabo/ci-platform/.github/workflows/ru-qa-actions-lock.yml@76bf81b8f8ef67234ab5d3361ba5f30e0646a284 # v0.6.1
