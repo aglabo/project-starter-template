@@ -7,7 +7,7 @@ workflows:
     '.github/workflows/ci-scan-secrets.yml': []
     '.github/workflows/ci-test-shellspec.yml':
         - 'actions/checkout@v7.0.1'
-        - 'aglabo/ci-platform@v0.6.0'
+        - 'aglabo/ci-platform@v0.6.1'
     '.github/workflows/ci-workflows-qa.yml': []
 dependencies:
     'actions/checkout@v7.0.1':
@@ -15,8 +15,8 @@ dependencies:
         commit: 'sha1-3d3c42e5aac5ba805825da76410c181273ba90b1'
         owner_id: 44036562
         repo_id: 197814629
-    'aglabo/ci-platform@v0.6.0':
-        ref: 'v0.6.0'
-        commit: 'sha1-24960dadb7bb87bc471d1bb85609a04b190ce4e0'
+    'aglabo/ci-platform@v0.6.1':
+        ref: 'v0.6.1'
+        commit: 'sha1-76bf81b8f8ef67234ab5d3361ba5f30e0646a284'
         owner_id: 211574028
         repo_id: 1154660752
