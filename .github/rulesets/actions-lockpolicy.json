@@ -1,0 +1,15 @@
+{
+  "id": 13275,
+  "name": "Actions Lock",
+  "target": "actions",
+  "source_type": "Repository",
+  "source": "atsushifx/ccr-helloworld",
+  "enforcement": "disabled",
+  "conditions": {},
+  "rules": [
+    {
+      "type": "require_lockfile"
+    }
+  ],
+  "bypass_actors": []
+}
