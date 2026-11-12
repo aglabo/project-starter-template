@@ -1,0 +1,15 @@
+{
+  "id": 13275,
+  "name": "Actions Lock",
+  "target": "actions",
+  "source_type": "Repository",
+  "source": "aglabo/project-starter-template",
+  "enforcement": "disabled",
+  "conditions": {},
+  "rules": [
+    {
+      "type": "require_lockfile"
+    }
+  ],
+  "bypass_actors": []
+}
