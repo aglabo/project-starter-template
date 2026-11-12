@@ -10,16 +10,11 @@ pre-commit:
   parallel: true
   commands:
     betterleaks:
-      run: betterleaks protect --config ./configs/betterleaks.toml
+      run: bash runners/run-betterleaks.sh --staged
 
     secretlint:
       glob: "**/*"
-      run: >
-        secretlint
-        --secretlintrc ./configs/secretlint.config.yaml
-        --secretlintignore .gitignore
-        --maskSecrets
-        "{staged_files}"
+      run: bash runners/run-secretlint.sh {staged_files}
       skip:
         - empty
 
