@@ -3,7 +3,7 @@
   "name": "Actions Lock",
   "target": "actions",
   "source_type": "Repository",
-  "source": "atsushifx/ccr-helloworld",
+  "source": "aglabo/project-starter-template",
   "enforcement": "disabled",
   "conditions": {},
   "rules": [
