@@ -66,15 +66,16 @@ Describe 'T-RUN-MBL: run-betterleaks.sh main()'
       The line 7 of contents of file "${_STUB_LOG}" should equal "."
     End
 
-    It "[Normal] T-RUN-MBL-02: main a b -> dir <options> a b"
+    It "[Normal] T-RUN-MBL-02: main a b -> dir <options> a, then dir <options> b"
       XDG_CONFIG_HOME="${_TEST_DIR}/xdg"
       _create_global_config "${_TEST_DIR}/xdg"
       When call main a b
       The status should equal 0
-      The lines of contents of file "${_STUB_LOG}" should equal 8
+      The lines of contents of file "${_STUB_LOG}" should equal 14
       The line 1 of contents of file "${_STUB_LOG}" should equal "dir"
       The line 7 of contents of file "${_STUB_LOG}" should equal "a"
-      The line 8 of contents of file "${_STUB_LOG}" should equal "b"
+      The line 8 of contents of file "${_STUB_LOG}" should equal "dir"
+      The line 14 of contents of file "${_STUB_LOG}" should equal "b"
     End
 
     It "[Normal] T-RUN-MBL-03: main --staged -> git --pre-commit --staged <options>"
@@ -136,6 +137,16 @@ Describe 'T-RUN-MBL: run-betterleaks.sh main()'
       The status should equal 0
       The lines of contents of file "${_STUB_LOG}" should equal 7
       The line 7 of contents of file "${_STUB_LOG}" should equal "my dir"
+    End
+
+    It "[Edge] T-RUN-MBL-09: main a b with betterleaks returning 1 -> both scanned, returns 1"
+      _STUB_RC=1
+      _create_local_config
+      When call main a b
+      The status should equal 1
+      The lines of contents of file "${_STUB_LOG}" should equal 14
+      The line 7 of contents of file "${_STUB_LOG}" should equal "a"
+      The line 14 of contents of file "${_STUB_LOG}" should equal "b"
     End
   End
 End

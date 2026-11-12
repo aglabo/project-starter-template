@@ -28,7 +28,7 @@ readonly CONFIG_LOCAL_RELPATH='configs/betterleaks.toml'
 # @description Run betterleaks with the checked-in config,
 #              or with the global config when the checked-in one is absent.
 #              With --staged, scan the staged changes (pre-commit);
-#              otherwise scan the given paths (default: the current directory).
+#              otherwise scan each given path (default: the current directory).
 #              Findings are printed with the secret redacted
 # @arg $1 string Optional "--staged" to scan the staged changes
 # @arg $@ string Paths to scan (ignored with --staged)
@@ -56,7 +56,17 @@ main() {
   elif [[ ${#targets[@]} -eq 0 ]]; then
     betterleaks dir "${commonOpts[@]}" .
   else
-    betterleaks dir "${commonOpts[@]}" "${targets[@]}"
+    # BetterLeaks v1.0.0 `dir` scans only one path and falls back to "."
+    # when given more, so scan each target separately and keep the first failure
+    local target rc
+    for target in "${targets[@]}"; do
+      rc=0
+      betterleaks dir "${commonOpts[@]}" "${target}" || rc=$?
+      if [[ $status -eq 0 ]]; then
+        status=$rc
+      fi
+    done
+    return "$status"
   fi
 }
 
