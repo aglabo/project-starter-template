@@ -1,7 +1,7 @@
-// src: base/configs/commitlint.config.based.mjs
+// src: templates/base/configs/commitlint.config.base.mjs
 // @(#) : commitlint basic configuration
 //
-// Copyright (c) 2025- atsushifx <http://github.com/atsushifx>
+// Copyright (c) 2026- atsushifx <https://github.com/atsushifx>
 //
 // This software is released under the MIT License.
 // https://opensource.org/licenses/MIT
