@@ -14,7 +14,7 @@ pre-commit:
 
     secretlint:
       glob: "**/*"
-      run: bash runners/run-secretlint.sh {staged_files}
+      run: secretlint {staged_files}
       skip:
         - empty
 
