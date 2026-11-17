@@ -1,11 +1,12 @@
 #!/usr/bin/env bash
-# runners/__tests__/spec_helper.sh
+# src: runners/__tests__/spec_helper.sh
 # @(#) : common test helper for runners tests
 #
 # Copyright (c) 2026- atsushifx <https://github.com/atsushifx>
 #
 # This software is released under the MIT License.
 # https://opensource.org/licenses/MIT
+
 # spec_helper.sh - temporary directory and stub helpers shared by every runners test
 
 # shellcheck shell=bash
@@ -44,7 +45,7 @@ make_temp_dir() {
 remove_temp_dir() {
   local __var
   for __var in "$@"; do
-    if [[ -n "${!__var:-}" ]]; then
+    if [[ -n ${!__var:-}   ]]; then
       rm -rf "${!__var}"
     fi
     unset "$__var"
@@ -67,7 +68,7 @@ write_bash_stub() {
   {
     echo '#!/usr/bin/env bash'
     printf '%s\n' "$@"
-  } >"$__path" && chmod +x "$__path"
+  } > "$__path" && chmod +x "$__path"
 }
 
 #

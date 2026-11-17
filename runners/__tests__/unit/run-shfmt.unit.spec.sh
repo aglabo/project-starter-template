@@ -1,6 +1,12 @@
 #!/usr/bin/env bash
-# src: ./runners/__tests__/unit/run-shfmt.unit.spec.sh
+# src: runners/__tests__/unit/run-shfmt.unit.spec.sh
 # @(#) : ShellSpec unit tests for run-shfmt.sh main()
+#
+# Copyright (c) 2026- atsushifx <https://github.com/atsushifx>
+#
+# This software is released under the MIT License.
+# https://opensource.org/licenses/MIT
+
 # shellcheck shell=bash
 
 Include "${SHELLSPEC_PROJECT_ROOT}/runners/run-shfmt.sh"
@@ -34,46 +40,45 @@ Describe 'T-RUN-MSF: run-shfmt.sh main()'
   BeforeEach '_setup_env'
   AfterEach '_cleanup_env'
 
-  # Targets are passed through to shfmt with --apply-ignore, which makes shfmt apply the
-  # .editorconfig ignore rules (spec files, node_modules, .tools) to explicit files and directory walks alike
+  # Targets are passed through to shfmt as-is; formatting rules and ignores come from .editorconfig
   Describe 'When: Normal cases'
-    It "[Normal] T-RUN-MSF-01: --list a.sh a.spec.sh -> shfmt -ln bash -i 2 -l --apply-ignore -- a.sh a.spec.sh"
+    It "[Normal] T-RUN-MSF-01: --list a.sh a.spec.sh -> shfmt -l -- a.sh a.spec.sh"
       When call main --list a.sh a.spec.sh
       The status should equal 0
-      The contents of file "${_STUB_LOG}" should equal "$(printf '%s\n' -ln bash -i 2 -l --apply-ignore -- a.sh a.spec.sh)"
+      The contents of file "${_STUB_LOG}" should equal "$(printf '%s\n' -l -- a.sh a.spec.sh)"
     End
 
-    It "[Normal] T-RUN-MSF-02: --format a.sh a.spec.sh -> shfmt -ln bash -i 2 -w --apply-ignore -- a.sh a.spec.sh"
+    It "[Normal] T-RUN-MSF-02: --format a.sh a.spec.sh -> shfmt -w -- a.sh a.spec.sh"
       When call main --format a.sh a.spec.sh
       The status should equal 0
-      The contents of file "${_STUB_LOG}" should equal "$(printf '%s\n' -ln bash -i 2 -w --apply-ignore -- a.sh a.spec.sh)"
+      The contents of file "${_STUB_LOG}" should equal "$(printf '%s\n' -w -- a.sh a.spec.sh)"
     End
 
-    It "[Normal] T-RUN-MSF-03: --list runners -> shfmt -ln bash -i 2 -l --apply-ignore -- runners"
+    It "[Normal] T-RUN-MSF-03: --list runners -> shfmt -l -- runners"
       When call main --list runners
       The status should equal 0
-      The contents of file "${_STUB_LOG}" should equal "$(printf '%s\n' -ln bash -i 2 -l --apply-ignore -- runners)"
+      The contents of file "${_STUB_LOG}" should equal "$(printf '%s\n' -l -- runners)"
     End
   End
 
   # Boundary target lists
   Describe 'When: Edge cases'
-    It "[Edge] T-RUN-MSF-04: --list a.spec.sh b/c.spec.sh -> shfmt -ln bash -i 2 -l --apply-ignore -- a.spec.sh b/c.spec.sh"
+    It "[Edge] T-RUN-MSF-04: --list a.spec.sh b/c.spec.sh -> shfmt -l -- a.spec.sh b/c.spec.sh"
       When call main --list a.spec.sh b/c.spec.sh
       The status should equal 0
-      The contents of file "${_STUB_LOG}" should equal "$(printf '%s\n' -ln bash -i 2 -l --apply-ignore -- a.spec.sh b/c.spec.sh)"
+      The contents of file "${_STUB_LOG}" should equal "$(printf '%s\n' -l -- a.spec.sh b/c.spec.sh)"
     End
 
-    It "[Edge] T-RUN-MSF-05: no arguments -> the default target is the project root: shfmt -ln bash -i 2 -l --apply-ignore -- ."
+    It "[Edge] T-RUN-MSF-05: no arguments -> the default target is the project root: shfmt -l -- ."
       When call main
       The status should equal 0
-      The contents of file "${_STUB_LOG}" should equal "$(printf '%s\n' -ln bash -i 2 -l --apply-ignore -- .)"
+      The contents of file "${_STUB_LOG}" should equal "$(printf '%s\n' -l -- .)"
     End
 
-    It "[Edge] T-RUN-MSF-06: --list 'runners\\libs' -> backslashes normalized: shfmt -ln bash -i 2 -l --apply-ignore -- runners/libs"
+    It "[Edge] T-RUN-MSF-06: --list 'runners\\libs' -> backslashes normalized: shfmt -l -- runners/libs"
       When call main --list 'runners\libs'
       The status should equal 0
-      The contents of file "${_STUB_LOG}" should equal "$(printf '%s\n' -ln bash -i 2 -l --apply-ignore -- runners/libs)"
+      The contents of file "${_STUB_LOG}" should equal "$(printf '%s\n' -l -- runners/libs)"
     End
   End
 End
