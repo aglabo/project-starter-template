@@ -1,7 +1,7 @@
 # src: lefthook.yml
 # @(#) : lefthook config
 #
-# Copyright (c) 2026- atsushifx <http://github.com/atsushifx>
+# Copyright (c) 2026- atsushifx <https://github.com/atsushifx>
 #
 # This software is released under the MIT License.
 # https://opensource.org/licenses/MIT
@@ -14,7 +14,7 @@ pre-commit:
 
     secretlint:
       glob: "**/*"
-      run: bash runners/run-secretlint.sh {staged_files}
+      run: secretlint {staged_files}
       skip:
         - empty
 

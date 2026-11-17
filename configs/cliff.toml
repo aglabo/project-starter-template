@@ -1,5 +1,5 @@
-# src: ./configs/cliff.toml
-# @(#): git-cliff configs:
+# src: configs/cliff.toml
+# @(#) : git-cliff configuration
 #
 # Copyright (c) 2026- atsushifx <https://github.com/atsushifx>
 #

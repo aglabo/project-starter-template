@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# runners/exec/__tests__/spec_helper.sh
+# src: runners/exec/__tests__/spec_helper.sh
 # @(#) : shared test helper for runners/exec tests
 #
 # Copyright (c) 2026- atsushifx <https://github.com/atsushifx>

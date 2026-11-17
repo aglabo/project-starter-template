@@ -1,11 +1,12 @@
 #!/usr/bin/env bash
-# runners/__tests__/unit/run-shellspec.unit.spec.sh
+# src: runners/__tests__/unit/run-shellspec.unit.spec.sh
 # @(#) : BDD unit tests for run-shellspec.sh
 #
 # Copyright (c) 2026- atsushifx <https://github.com/atsushifx>
 #
 # This software is released under the MIT License.
 # https://opensource.org/licenses/MIT
+
 # shellcheck shell=bash
 # run-shellspec.unit.spec.sh - BDD spec for run-shellspec.sh
 

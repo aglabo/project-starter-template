@@ -1,3 +1,11 @@
+# src: scripts/__tests__/unit/setup-dev-env.unit.spec.sh
+# @(#) : ShellSpec unit tests for setup-dev-env.sh
+#
+# Copyright (c) 2026- atsushifx <https://github.com/atsushifx>
+#
+# This software is released under the MIT License.
+# https://opensource.org/licenses/MIT
+
 # shellcheck shell=bash
 
 Include "${SHELLSPEC_PROJECT_ROOT}/scripts/__tests__/spec_helper.sh"

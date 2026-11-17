@@ -1,4 +1,4 @@
-# src: ./.github/workflows/ci-test-shellspec.yml
+# src: .github/workflows/ci-test-shellspec.yml
 # @(#) : Workflow for running shellspec unit tests in .github repository
 #
 # Copyright (c) 2026- atsushifx <https://github.com/atsushifx>

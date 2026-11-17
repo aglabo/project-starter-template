@@ -38,7 +38,7 @@ readonly CONFIG_LOCAL_RELPATH='configs/betterleaks.toml'
 # @exitcode 78 (EXIT_CONFIG_NOT_FOUND) Config file not found
 main() {
   local staged=0
-  if [[ "${1:-}" == '--staged' ]]; then
+  if [[ ${1:-} == '--staged'   ]]; then
     staged=1
     shift
   fi
@@ -70,7 +70,7 @@ main() {
   fi
 }
 
-if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
+if [[ ${BASH_SOURCE[0]} == "${0}"   ]]; then
   main "$@"
   exit $?
 fi

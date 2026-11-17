@@ -23,9 +23,11 @@ description: テストコードのテスト ID (`T-<scope>-<target>-NN`) が使�
 | ----- | -------------------------------------- |
 | `CWR` | `run-shellspec.sh` `check_wsl_ready()` |
 | `MAL` | `run-actionlint.sh` `main()`           |
+| `MBL` | `run-betterleaks.sh` `main()`          |
 | `MGL` | `run-ghalint.sh` `main()`              |
 | `MML` | `run-markdownlint.sh` `main()`         |
 | `MSC` | `run-shellcheck.sh` `main()`           |
+| `MSE` | `run-secretlint.sh` `main()`           |
 | `MSF` | `run-shfmt.sh` `main()`                |
 | `MSL` | `run-shellspec.sh` `main()`            |
 | `MTL` | `run-textlint.sh` `main()`             |

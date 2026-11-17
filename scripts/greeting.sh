@@ -1,5 +1,12 @@
 #!/usr/bin/env bash
+# src: scripts/greeting.sh
+# @(#) : output a greeting message for a given name
 #
+# Copyright (c) 2026- atsushifx <https://github.com/atsushifx>
+#
+# This software is released under the MIT License.
+# https://opensource.org/licenses/MIT
+
 # @file greeting.sh
 # @brief Outputs a greeting message for a given name
 # @description
@@ -28,7 +35,7 @@ set -euo pipefail
 greeting() {
   local name="${1:-}"
 
-  if [[ -z "$name" ]]; then
+  if [[ -z $name   ]]; then
     echo "Error: Name parameter is required" >&2
     return 1
   fi
@@ -47,6 +54,6 @@ main() {
 }
 
 # Execute main only if script is run directly (not sourced)
-if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
+if [[ ${BASH_SOURCE[0]} == "${0}"   ]]; then
   main "$@"
 fi
