@@ -1,4 +1,4 @@
-# src: ./.github/workflows/ci-docs-qa.yml
+# src: .github/workflows/ci-docs-qa.yml
 # @(#) : Caller workflow for document QA of changed Markdown files
 #
 # Copyright (c) 2026- atsushifx <https://github.com/atsushifx>
