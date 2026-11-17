@@ -51,12 +51,12 @@ secretlint() {
 
 # ─── Tests
 
-Describe 'T-RUN-MSL: run-secretlint.sh main()'
+Describe 'T-RUN-MSE: run-secretlint.sh main()'
   BeforeEach '_setup_env'
   AfterEach '_cleanup_env'
 
   Describe 'When: Normal cases'
-    It "[Normal] T-RUN-MSL-01: no arguments, .gitignore exists -> --secretlintrc <global> --maskSecrets --secretlintignore <root>/.gitignore ."
+    It "[Normal] T-RUN-MSE-01: no arguments, .gitignore exists -> --secretlintrc <global> --maskSecrets --secretlintignore <root>/.gitignore ."
       XDG_CONFIG_HOME="${_TEST_DIR}/xdg"
       _create_global_config "${_TEST_DIR}/xdg"
       _create_gitignore
@@ -71,7 +71,7 @@ Describe 'T-RUN-MSL: run-secretlint.sh main()'
       The line 6 of contents of file "${_STUB_LOG}" should equal "."
     End
 
-    It "[Normal] T-RUN-MSL-02: main a b -> paths forwarded in order after the options"
+    It "[Normal] T-RUN-MSE-02: main a b -> paths forwarded in order after the options"
       _create_local_config
       _create_gitignore
       When call main a b
@@ -81,7 +81,7 @@ Describe 'T-RUN-MSL: run-secretlint.sh main()'
       The line 7 of contents of file "${_STUB_LOG}" should equal "b"
     End
 
-    It "[Normal] T-RUN-MSL-03: <tmp>/configs/secretlint.config.yaml exists -> the repository config takes priority"
+    It "[Normal] T-RUN-MSE-03: <tmp>/configs/secretlint.config.yaml exists -> the repository config takes priority"
       _create_local_config
       XDG_CONFIG_HOME="${_TEST_DIR}/xdg"
       _create_global_config "${_TEST_DIR}/xdg"
@@ -92,14 +92,14 @@ Describe 'T-RUN-MSL: run-secretlint.sh main()'
   End
 
   Describe 'When: Error cases'
-    It "[Error] T-RUN-MSL-04: secretlint returns 1 (secrets found) -> main returns 1 unchanged"
+    It "[Error] T-RUN-MSE-04: secretlint returns 1 (secrets found) -> main returns 1 unchanged"
       _STUB_RC=1
       _create_local_config
       When call main a
       The status should equal 1
     End
 
-    It "[Error] T-RUN-MSL-05: no config locally or globally -> returns 78, secretlint not called"
+    It "[Error] T-RUN-MSE-05: no config locally or globally -> returns 78, secretlint not called"
       XDG_CONFIG_HOME="${_TEST_DIR}/xdg"
       HOME="${_TEST_DIR}/home"
       When call main
@@ -110,7 +110,7 @@ Describe 'T-RUN-MSL: run-secretlint.sh main()'
   End
 
   Describe 'When: Edge cases'
-    It "[Edge] T-RUN-MSL-06: no .gitignore -> --secretlintignore is omitted"
+    It "[Edge] T-RUN-MSE-06: no .gitignore -> --secretlintignore is omitted"
       _create_local_config
       When call main
       The status should equal 0
@@ -119,7 +119,7 @@ Describe 'T-RUN-MSL: run-secretlint.sh main()'
       The line 4 of contents of file "${_STUB_LOG}" should equal "."
     End
 
-    It "[Edge] T-RUN-MSL-07: main \"my file.txt\" -> forwarded as a single argument"
+    It "[Edge] T-RUN-MSE-07: main \"my file.txt\" -> forwarded as a single argument"
       _create_local_config
       When call main "my file.txt"
       The status should equal 0

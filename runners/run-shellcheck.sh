@@ -15,12 +15,30 @@ set -euo pipefail
 . "$(dirname "${BASH_SOURCE[0]}")/libs/init-vars.lib.sh"
 cd "${SCRIPT_ROOT}/.."
 
-SHELLCHECKRC="${SHELLCHECKRC:-${SCRIPT_ROOT}/../configs/shellcheckrc}"
+# load utility library
+# shellcheck source=runners/libs/utils.lib.sh
+. "${SCRIPT_ROOT}/libs/utils.lib.sh"
+
+# Config file path relative to the global config directory
+readonly CONFIG_GLOBAL_RELPATH='shellcheckrc'
+
+# Config file path relative to PROJECT_ROOT
+readonly CONFIG_LOCAL_RELPATH='configs/shellcheckrc'
+
+# @description Run shellcheck on .sh files (spec files and node_modules/.tools are skipped).
+#              The rc file is taken from --rcfile, then $SHELLCHECKRC, then the checked-in config,
+#              then the global config
+# @arg $@ string Options (--rcfile|-r <file>) followed by paths to check
+# @stderr "Error: <not-found message>" when no rc file is found
+# @exitcode 0 All checks passed, or no .sh files found
+# @exitcode 1 Lint error or unknown option
+# @exitcode 78 (EXIT_CONFIG_NOT_FOUND) Config file not found
 main() {
+  local rcfile="${SHELLCHECKRC:-}"
   while [[ $# -gt 0 ]]; do
     case "$1" in
     --rcfile | -r)
-      SHELLCHECKRC="$2"
+      rcfile="$2"
       shift 2
       ;;
     --)
@@ -54,7 +72,15 @@ main() {
     echo "No .sh files found." >&2
     return 0
   fi
-  (shellcheck --rcfile="$SHELLCHECKRC" "${files[@]}")
+  if [[ -z "$rcfile" ]]; then
+    local status=0
+    rcfile="$(resolve_config_file "$CONFIG_GLOBAL_RELPATH" "$CONFIG_LOCAL_RELPATH")" || status=$?
+    if [[ $status -ne 0 ]]; then
+      echo "Error: $(format_config_not_found "$status" "$CONFIG_GLOBAL_RELPATH" "$CONFIG_LOCAL_RELPATH")" >&2
+      return "$EXIT_CONFIG_NOT_FOUND"
+    fi
+  fi
+  (shellcheck --rcfile="$rcfile" "${files[@]}")
 }
 if [[ ${BASH_SOURCE[0]} == "$0" ]]; then
   main "$@"
