@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # src: ./scripts/prepare-commit-msg.sh
-# @(#) : Prepare commit message using Codex CLI
+# @(#) : Prepare commit message using an AI CLI (codex, claude, copilot, or opencode)
 #
 # Copyright (c) 2026- atsushifx <http://github.com/atsushifx>
 #
@@ -8,7 +8,7 @@
 # https://opensource.org/licenses/MIT
 #
 # @file prepare-commit-msg.sh
-# @brief Prepare commit message using AI (Codex, Claude, or similar)
+# @brief Prepare commit message using AI (Codex, Claude, Copilot, or OpenCode)
 # @description
 #   Automatically generates Conventional Commits format messages by analyzing
 #   staged changes and recent commit history using AI.
@@ -77,11 +77,11 @@ readonly SCRIPT_DIR
 OUTPUT_FILE=""
 
 ##
-# @description AI model name for commit message generation (default: gpt-6-luna)
-DEFAULT_AI_MODEL="gpt-6-luna"
+# @description AI model name for commit message generation
+DEFAULT_AI_MODEL="opus"
 
-###
-# @description AI model name for commit message generation (default: gpt-6-luna)
+##
+# @description AI model name in use; overridden by --model (starts as DEFAULT_AI_MODEL)
 AI_MODEL="${DEFAULT_AI_MODEL}"
 
 ##
@@ -123,7 +123,8 @@ Arguments:
 Options:
   --output FILE, -o FILE      Write commit message to FILE instead of stdout
   --model MODEL               AI model name (default: gpt-6-luna)
-                              Supported: gpt-*, o1-*, claude-*, haiku, sonnet, opus
+                              Supported: gpt-*, o1-*, claude-*, haiku, sonnet, opus, fable,
+                              copilot/<model>, <provider>/<model> (OpenCode)
   -h, --help                  Show this help message
 
 Examples:
@@ -251,8 +252,9 @@ make_context_block() {
 #
 # **Supported Providers:**
 # - OpenAI (gpt-*, o1-*) -> codex exec -s read-only --color never --model <model>
-# - Anthropic (claude-*, haiku, sonnet, opus) -> claude -p --model <model>
-# - OpenCode (org/model) -> opencode run --model <model>
+# - Anthropic (claude-*, haiku, sonnet, opus, fable) -> claude -p --tools Read,Grep,Glob --strict-mcp-config --model <model>
+# - Copilot (copilot/model) -> copilot --model <model>
+# - OpenCode (provider/model) -> opencode run --model <model>
 #
 # **Safety Notes:**
 # - Uses array expansion, NOT eval (shell injection safe)

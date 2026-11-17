@@ -12,7 +12,9 @@
 #
 # Usage:
 #   ./scripts/sync-configs.sh <target_dir> <config_type> [--dry-run]
-#   config_type: secretlint | package |all
+#   config_type: secretlint | package | all
+#   secretlint copies ${REPO_ROOT}/shared/configs/secretlint.config.base.yaml,
+#   package syncs package.json scripts via sync-package-scripts.ts
 #
 #<<
 

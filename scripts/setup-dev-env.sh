@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # src: ./scripts/setup-dev-env.sh
-# @(#) : Install lefthook in local development environment only
+# @(#) : Install lefthook hooks, shellspec, and aglabo dev tools in local development environment only (skipped in CI)
 #
 # Copyright (c) 2026- atsushifx <http://github.com/atsushifx>
 #
