@@ -12,7 +12,7 @@ It comes with best practices and essential tools pre-configured.
 - Includes common boilerplate files such as `.editorconfig`, `.gitignore`, and more
   - Minimal configuration with flexibility for future extensions
 - Lightweight Git hook environment powered by `lefthook`
-  - Prevents credential leakage using tools like `gitleaks` and `secretlint`
+  - Prevents credential leakage using tools like `betterleaks` and `secretlint`
 
 ## Getting Started
 
@@ -23,18 +23,19 @@ It comes with best practices and essential tools pre-configured.
 
 ## Included Tools
 
-| Tool       | Description                                    |
-| ---------- | ---------------------------------------------- |
-| lefthook   | Git commit hook manager                        |
-| delta      | Visual Git diff viewer                         |
-| commitlint | Linting for commit message format              |
-| gitleaks   | Detects secrets and credentials in source code |
-| secretlint | Static analysis tool to catch secrets in files |
-| cspell     | Spellchecker for code and documentation        |
-| dprint     | Fast and extensible code formatter (optional)  |
+| Tool        | Description                                    |
+| ----------- | ---------------------------------------------- |
+| lefthook    | Git commit hook manager                        |
+| delta       | Visual Git diff viewer                         |
+| commitlint  | Linting for commit message format              |
+| betterleaks | Detects secrets and credentials in source code |
+| secretlint  | Static analysis tool to catch secrets in files |
+| cspell      | Spellchecker for code and documentation        |
+| dprint      | Fast and extensible code formatter (optional)  |
 
 > **Note**
 > These tools are installed independently using Scoop or pnpm and are not bundled with the repository.
+> Runner scripts in `runners/` read tool configs from `configs/` first, then from `~/.config/global-configs/`.
 > You are responsible for managing their versions and keeping them up to date.
 
 ## License
