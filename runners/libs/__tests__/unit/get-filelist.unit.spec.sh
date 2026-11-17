@@ -1,11 +1,12 @@
 #!/usr/bin/env bash
-# runners/libs/__tests__/unit/get-filelist.unit.spec.sh
+# src: runners/libs/__tests__/unit/get-filelist.unit.spec.sh
 # @(#) : BDD unit tests for get-filelist.lib.sh
 #
 # Copyright (c) 2026- atsushifx <https://github.com/atsushifx>
 #
 # This software is released under the MIT License.
 # https://opensource.org/licenses/MIT
+
 # shellcheck shell=bash
 # get-filelist.unit.spec.sh - BDD spec for get-filelist.lib.sh
 

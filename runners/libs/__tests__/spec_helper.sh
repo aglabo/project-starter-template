@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# runners/libs/__tests__/spec_helper.sh
+# src: runners/libs/__tests__/spec_helper.sh
 # @(#) : shared test helper for runners/libs tests
 #
 # Copyright (c) 2026- atsushifx <https://github.com/atsushifx>
@@ -59,7 +59,7 @@ setup_temp_specs() {
   # Rebuild until the completion marker exists. Testing the root with `-d` instead
   # would also accept a tree a parallel job is still filling in, yielding a
   # short spec list. `-f` is a builtin test, not a fork()
-  if [[ ! -f "$__ready" ]]; then
+  if [[ ! -f $__ready   ]]; then
     # Fake spec files mirroring the real layout (no e2e directory on purpose)
     local __spec __dir
     local -A __seen=()
@@ -94,7 +94,7 @@ setup_temp_specs() {
     touch "${__files[@]}" || return 1
     # Stamp completion last and only on success, so the marker always implies a
     # finished tree. A redirection, not a command: no fork()
-    : >"$__ready" || return 1
+    : > "$__ready" || return 1
   fi
 }
 

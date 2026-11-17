@@ -1,11 +1,12 @@
 #!/usr/bin/env bash
-# runners/libs/__tests__/unit/init-vars.lib.unit.spec.sh
+# src: runners/libs/__tests__/unit/init-vars.lib.unit.spec.sh
 # @(#) : BDD unit tests for init-vars.lib.sh
 #
 # Copyright (c) 2026- atsushifx <https://github.com/atsushifx>
 #
 # This software is released under the MIT License.
 # https://opensource.org/licenses/MIT
+
 # shellcheck shell=bash
 # init-vars.lib.unit.spec.sh - BDD spec for init-vars.lib.sh
 
@@ -140,6 +141,9 @@ _GIT_FAIL_STUB="git() { return ${_IVPR_GIT_FAILURE_CODE}; }; "
 #            so its git toplevel (repo/) differs from the lib's ../.. (repo/a/b/)
 _setup_env() {
   make_temp_dir _TEST_DIR || return 1
+  # Fixture repos live in a temp dir whose owner git cannot verify (e.g. Windows drives),
+  # so allow them via command-line config scope without touching the user's git config.
+  export GIT_CONFIG_COUNT=1 GIT_CONFIG_KEY_0=safe.directory GIT_CONFIG_VALUE_0='*'
   mkdir -p "${_TEST_DIR}/other" "${_TEST_DIR}/plain" "${_TEST_DIR}/proj/runners/libs"
   mkdir -p "${_TEST_DIR}/repo/a/b/runners/libs"
   git -C "${_TEST_DIR}/other" init -q
