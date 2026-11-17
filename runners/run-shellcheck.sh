@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# src: ./runners/run-shellcheck.sh
+# src: runners/run-shellcheck.sh
 # @(#) : shellcheck runner
 #
 # Copyright (c) 2026- atsushifx <https://github.com/atsushifx>
@@ -37,19 +37,19 @@ main() {
   local rcfile="${SHELLCHECKRC:-}"
   while [[ $# -gt 0 ]]; do
     case "$1" in
-    --rcfile | -r)
-      rcfile="$2"
-      shift 2
-      ;;
-    --)
-      shift
-      break
-      ;;
-    -*)
-      echo "Unknown option: $1" >&2
-      return 1
-      ;;
-    *) break ;;
+      --rcfile | -r)
+        rcfile="$2"
+        shift 2
+        ;;
+      --)
+        shift
+        break
+        ;;
+      -*)
+        echo "Unknown option: $1" >&2
+        return 1
+        ;;
+      *) break ;;
     esac
   done
   local -a targets=("$@")
@@ -72,7 +72,7 @@ main() {
     echo "No .sh files found." >&2
     return 0
   fi
-  if [[ -z "$rcfile" ]]; then
+  if [[ -z $rcfile   ]]; then
     local status=0
     rcfile="$(resolve_config_file "$CONFIG_GLOBAL_RELPATH" "$CONFIG_LOCAL_RELPATH")" || status=$?
     if [[ $status -ne 0 ]]; then

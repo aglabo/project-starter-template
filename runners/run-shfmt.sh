@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# src: ./runners/run-shfmt.sh
+# src: runners/run-shfmt.sh
 # @(#) : shfmt runner (formatting rules come from .editorconfig)
 #
 # Copyright (c) 2026- atsushifx <https://github.com/atsushifx>
@@ -22,23 +22,23 @@ main() {
   local mode="list"
   while [[ $# -gt 0 ]]; do
     case "$1" in
-    --list | -l)
-      mode="list"
-      shift
-      ;;
-    --format)
-      mode="format"
-      shift
-      ;;
-    --)
-      shift
-      break
-      ;;
-    -*)
-      echo "Unknown option: $1" >&2
-      return 1
-      ;;
-    *) break ;;
+      --list | -l)
+        mode="list"
+        shift
+        ;;
+      --format)
+        mode="format"
+        shift
+        ;;
+      --)
+        shift
+        break
+        ;;
+      -*)
+        echo "Unknown option: $1" >&2
+        return 1
+        ;;
+      *) break ;;
     esac
   done
   local -a targets=("$@")
@@ -47,10 +47,12 @@ main() {
   fi
   targets=("${targets[@]//\\//}")
   case "$mode" in
-  list) (cd "$PROJECT_ROOT" && shfmt -l -- "${targets[@]}") ;;
-  format) (cd "$PROJECT_ROOT" && shfmt -w -- "${targets[@]}") ;;
+    list) (cd "$PROJECT_ROOT" && shfmt -l -- "${targets[@]}") ;;
+    format) (cd "$PROJECT_ROOT" && shfmt -w -- "${targets[@]}") ;;
   esac
 }
 if [[ ${BASH_SOURCE[0]} == "$0" ]]; then
+  # exit so bash never re-reads this file after shfmt rewrites it in place
   main "$@"
+  exit $?
 fi
