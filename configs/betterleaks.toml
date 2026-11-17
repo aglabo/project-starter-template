@@ -1,4 +1,4 @@
-# src: ./configs/betterleaks.toml
+# src: configs/betterleaks.toml
 # @(#) : betterleaks configuration for secret detection
 #
 # Copyright (c) 2026- atsushifx <https://github.com/atsushifx>
