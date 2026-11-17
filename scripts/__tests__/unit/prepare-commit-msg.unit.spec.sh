@@ -1,4 +1,12 @@
-#shellcheck shell=bash
+# src: scripts/__tests__/unit/prepare-commit-msg.unit.spec.sh
+# @(#) : ShellSpec unit tests for prepare-commit-msg.sh
+#
+# Copyright (c) 2026- atsushifx <https://github.com/atsushifx>
+#
+# This software is released under the MIT License.
+# https://opensource.org/licenses/MIT
+
+# shellcheck shell=bash
 
 Include "${SHELLSPEC_PROJECT_ROOT}/scripts/__tests__/spec_helper.sh"
 

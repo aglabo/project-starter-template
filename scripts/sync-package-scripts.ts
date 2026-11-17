@@ -1,10 +1,10 @@
 #!/usr/bin/env tsx
 // src: scripts/sync-package-scripts.ts
-//
 // @(#) : Sync base scripts into target directory's package.json
 //
-// Copyright (c) 2026- Furukawa Atsushi
-// Released under the MIT License.
+// Copyright (c) 2026- atsushifx <https://github.com/atsushifx>
+//
+// This software is released under the MIT License.
 // https://opensource.org/licenses/MIT
 
 // libs

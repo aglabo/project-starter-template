@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# scripts/__tests__/spec_helper.sh
+# src: scripts/__tests__/spec_helper.sh
 # @(#) : shared test helper for scripts tests
 #
 # Copyright (c) 2026- atsushifx <https://github.com/atsushifx>
