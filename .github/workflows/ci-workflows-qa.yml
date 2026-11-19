@@ -1,5 +1,5 @@
 # src: .github/workflows/ci-workflows-qa.yml
-# @(#) : Caller workflow for GitHub Actions workflow QA in .github repository
+# @(#) : Caller workflow for GitHub Actions workflow QA
 #
 # Copyright (c) 2026- atsushifx <https://github.com/atsushifx>
 #
@@ -36,16 +36,16 @@ jobs:
     name: Actionlint
     permissions:
       contents: read
-    uses: aglabo/ci-platform/.github/workflows/ru-qa-actionlint.yml@76bf81b8f8ef67234ab5d3361ba5f30e0646a284 # v0.6.1
+    uses: aglabo/ci-platform/.github/workflows/ru-qa-actionlint.yml@v0.8.0
 
   ghalint:
     name: Ghalint
     permissions:
       contents: read
-    uses: aglabo/ci-platform/.github/workflows/ru-qa-ghalint.yml@76bf81b8f8ef67234ab5d3361ba5f30e0646a284 # v0.6.1
+    uses: aglabo/ci-platform/.github/workflows/ru-qa-ghalint.yml@v0.8.0
 
   actions-lock:
     name: Actions Lock
     permissions:
       contents: read
-    uses: aglabo/ci-platform/.github/workflows/ru-qa-actions-lock.yml@76bf81b8f8ef67234ab5d3361ba5f30e0646a284 # v0.6.1
+    uses: aglabo/ci-platform/.github/workflows/ru-qa-actions-lock.yml@v0.8.0
