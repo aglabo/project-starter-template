@@ -49,7 +49,11 @@
         "do_not_enforce_on_create": false,
         "required_status_checks": [
           {
-            "context": "Betterleaks Secret Scan / Betterleaks Secret Scan",
+            "context": "Secret Scan / Betterleaks Secret Scan",
+            "integration_id": 15368
+          },
+          {
+            "context": "Secret Scan / Secretlint Secret Scan",
             "integration_id": 15368
           }
         ]
