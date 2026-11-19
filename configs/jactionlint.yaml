@@ -19,7 +19,7 @@ online: false
 rules:
   missing-timeout: warn # lower the level of a rule the profile enables
   require-shell: error
-  unpinned-uses: error
+  unpinned-uses: off # SHA pinning is enforced by gh actions-lock (actions.lock)
   max-run-lines:
     level: warn
     max: 120
