@@ -1,3 +1,4 @@
+#!/usr/bin/env bash
 # src: scripts/__tests__/unit/setup-dev-env.unit.spec.sh
 # @(#) : ShellSpec unit tests for setup-dev-env.sh
 #
