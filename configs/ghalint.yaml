@@ -9,4 +9,26 @@
 # yaml-language-server: $schema=https://raw.githubusercontent.com/suzuki-shunsuke/ghalint/main/json-schema/ghalint.json
 
 # Exclude specific policies if needed
-excludes: []
+excludes:
+  # Job-level reusable workflows are not recorded by `gh actions-lock`,
+  # so ghalint cannot see them as locked; they are pinned by full tag instead.
+  - policy_name: action_ref_should_be_full_length_commit_sha
+    workflow_file_path: .github/workflows/ci-docs-qa.yml
+    job_name: lint-documents
+    action_name: aglabo/ci-platform/.github/workflows/ru-lint-documents.yml
+  - policy_name: action_ref_should_be_full_length_commit_sha
+    workflow_file_path: .github/workflows/ci-scan-secrets.yml
+    job_name: scan-secrets
+    action_name: aglabo/ci-platform/.github/workflows/ru-scan-secrets.yml
+  - policy_name: action_ref_should_be_full_length_commit_sha
+    workflow_file_path: .github/workflows/ci-workflows-qa.yml
+    job_name: actionlint
+    action_name: aglabo/ci-platform/.github/workflows/ru-qa-actionlint.yml
+  - policy_name: action_ref_should_be_full_length_commit_sha
+    workflow_file_path: .github/workflows/ci-workflows-qa.yml
+    job_name: ghalint
+    action_name: aglabo/ci-platform/.github/workflows/ru-qa-ghalint.yml
+  - policy_name: action_ref_should_be_full_length_commit_sha
+    workflow_file_path: .github/workflows/ci-workflows-qa.yml
+    job_name: actions-lock
+    action_name: aglabo/ci-platform/.github/workflows/ru-qa-actions-lock.yml

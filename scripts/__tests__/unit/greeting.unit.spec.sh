@@ -1,3 +1,4 @@
+#!/usr/bin/env bash
 # src: scripts/__tests__/unit/greeting.unit.spec.sh
 # @(#) : ShellSpec unit tests for greeting.sh
 #

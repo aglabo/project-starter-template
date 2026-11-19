@@ -1,3 +1,4 @@
+#!/usr/bin/env bash
 # src: scripts/__tests__/unit/prepare-commit-msg.unit.spec.sh
 # @(#) : ShellSpec unit tests for prepare-commit-msg.sh
 #

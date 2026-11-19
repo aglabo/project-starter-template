@@ -42,43 +42,43 @@ Describe 'T-RUN-MSF: run-shfmt.sh main()'
 
   # Targets are passed through to shfmt as-is; formatting rules and ignores come from .editorconfig
   Describe 'When: Normal cases'
-    It "[Normal] T-RUN-MSF-01: --list a.sh a.spec.sh -> shfmt -l -- a.sh a.spec.sh"
+    It "[Normal] T-RUN-MSF-01: --list a.sh a.spec.sh -> shfmt -l --apply-ignore -- a.sh a.spec.sh"
       When call main --list a.sh a.spec.sh
       The status should equal 0
-      The contents of file "${_STUB_LOG}" should equal "$(printf '%s\n' -l -- a.sh a.spec.sh)"
+      The contents of file "${_STUB_LOG}" should equal "$(printf '%s\n' -l --apply-ignore -- a.sh a.spec.sh)"
     End
 
-    It "[Normal] T-RUN-MSF-02: --format a.sh a.spec.sh -> shfmt -w -- a.sh a.spec.sh"
+    It "[Normal] T-RUN-MSF-02: --format a.sh a.spec.sh -> shfmt -w --apply-ignore -- a.sh a.spec.sh"
       When call main --format a.sh a.spec.sh
       The status should equal 0
-      The contents of file "${_STUB_LOG}" should equal "$(printf '%s\n' -w -- a.sh a.spec.sh)"
+      The contents of file "${_STUB_LOG}" should equal "$(printf '%s\n' -w --apply-ignore -- a.sh a.spec.sh)"
     End
 
-    It "[Normal] T-RUN-MSF-03: --list runners -> shfmt -l -- runners"
+    It "[Normal] T-RUN-MSF-03: --list runners -> shfmt -l --apply-ignore -- runners"
       When call main --list runners
       The status should equal 0
-      The contents of file "${_STUB_LOG}" should equal "$(printf '%s\n' -l -- runners)"
+      The contents of file "${_STUB_LOG}" should equal "$(printf '%s\n' -l --apply-ignore -- runners)"
     End
   End
 
   # Boundary target lists
   Describe 'When: Edge cases'
-    It "[Edge] T-RUN-MSF-04: --list a.spec.sh b/c.spec.sh -> shfmt -l -- a.spec.sh b/c.spec.sh"
+    It "[Edge] T-RUN-MSF-04: --list a.spec.sh b/c.spec.sh -> shfmt -l --apply-ignore -- a.spec.sh b/c.spec.sh"
       When call main --list a.spec.sh b/c.spec.sh
       The status should equal 0
-      The contents of file "${_STUB_LOG}" should equal "$(printf '%s\n' -l -- a.spec.sh b/c.spec.sh)"
+      The contents of file "${_STUB_LOG}" should equal "$(printf '%s\n' -l --apply-ignore -- a.spec.sh b/c.spec.sh)"
     End
 
-    It "[Edge] T-RUN-MSF-05: no arguments -> the default target is the project root: shfmt -l -- ."
+    It "[Edge] T-RUN-MSF-05: no arguments -> the default target is the project root: shfmt -l --apply-ignore -- ."
       When call main
       The status should equal 0
-      The contents of file "${_STUB_LOG}" should equal "$(printf '%s\n' -l -- .)"
+      The contents of file "${_STUB_LOG}" should equal "$(printf '%s\n' -l --apply-ignore -- .)"
     End
 
-    It "[Edge] T-RUN-MSF-06: --list 'runners\\libs' -> backslashes normalized: shfmt -l -- runners/libs"
+    It "[Edge] T-RUN-MSF-06: --list 'runners\\libs' -> backslashes normalized: shfmt -l --apply-ignore -- runners/libs"
       When call main --list 'runners\libs'
       The status should equal 0
-      The contents of file "${_STUB_LOG}" should equal "$(printf '%s\n' -l -- runners/libs)"
+      The contents of file "${_STUB_LOG}" should equal "$(printf '%s\n' -l --apply-ignore -- runners/libs)"
     End
   End
 End
