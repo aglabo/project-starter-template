@@ -103,6 +103,8 @@
 # Allow Templates (for project-starter-template repo)
 !/templates/
 !/templates/**
+!/base/
+!/base/**
 
 # source (tests live in src/**/__tests__/{unit,functional,integration,e2e})
 
