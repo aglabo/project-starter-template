@@ -32,7 +32,9 @@
     "lint:gha:workflows": "concurrently --raw --group \"bash runners/run-ghalint.sh run\" \"bash runners/run-ghalint.sh act\"",
     "lint:spells": "cspell --config .vscode/cspell.json --cache --cache-location .cache/cspell/cSpellCache ",
     "lint:text": "cross-env MSYS='NOGLOB' bash runners/run-textlint.sh ",
-    "lint:markdown": "cross-env MSYS='NOGLOB' bash runners/run-markdownlint.sh "
+    "lint:markdown": "cross-env MSYS='NOGLOB' bash runners/run-markdownlint.sh ",
+    "sync:configs": "pnpm exec tsx scripts/sync-package-scripts.ts",
+    "sync:configs:all": "pnpm -r run sync:configs"
   },
   "devDependencies": {
     "@commitlint/config-conventional": "^21.2.4"
