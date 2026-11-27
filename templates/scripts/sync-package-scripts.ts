@@ -1,4 +1,4 @@
-// src: scripts/sync-package-scripts.ts
+// src: templates/scripts/sync-package-scripts.ts
 // @(#) : merge base script templates into a package.json, keeping local-only scripts
 //
 // Copyright (c) 2025- atsushifx <https://github.com/atsushifx>
@@ -6,10 +6,11 @@
 // This software is released under the MIT License.
 // https://opensource.org/licenses/MIT
 //
-// usage: tsx scripts/sync-package-scripts.ts [target_dir] [--dry-run]
+// usage: node scripts/sync-package-scripts.ts [target_dir] [--dry-run]
 //   target_dir omitted: the directory pnpm was invoked from (INIT_CWD), else the package.json
 //   that pnpm is running (npm_package_json), else the current directory.
-//   kind is inferred: the repo root uses base-root-scripts.json, anything else base-scripts.json.
+//   kind is inferred: the base root (parent of this script's directory) uses
+//   base-root-scripts.json, anything else base-scripts.json. Ancestors of the base root are rejected.
 
 // libs
 import { readFileSync, writeFileSync } from 'node:fs';
@@ -32,7 +33,17 @@ const inferTargetDir = (): string => {
   return process.cwd();
 };
 const targetDir = inferTargetDir();
-const templateFile = path.resolve(targetDir) === repoRoot ? 'base-root-scripts.json' : 'base-scripts.json';
+const rootFromTarget = path.relative(targetDir, repoRoot);
+const isBaseRoot = rootFromTarget === '';
+const isAboveBaseRoot = !isBaseRoot && !path.isAbsolute(rootFromTarget)
+  && rootFromTarget.split(path.sep)[0] !== '..';
+
+// an ancestor of the base root is neither the base root nor a subproject: never overwrite it
+if (isAboveBaseRoot) {
+  console.error(`error: ${targetDir} contains the base root ${repoRoot}; not a sync target`);
+  process.exit(1);
+}
+const templateFile = isBaseRoot ? 'base-root-scripts.json' : 'base-scripts.json';
 
 const readJson = (file: string) => JSON.parse(readFileSync(file, 'utf8'));
 const baseScripts: Scripts = readJson(path.join(repoRoot, 'base/configs', templateFile)).scripts;
