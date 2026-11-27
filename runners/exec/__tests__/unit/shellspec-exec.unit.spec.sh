@@ -69,6 +69,38 @@ _teardown_decoy_tree() {
   remove_temp_dir _DECOY_ROOT
 }
 
+#
+# @description Build a private tree whose spec files all sit three levels deep, both
+#              inside node_modules (direct and nested) and outside it, including a
+#              directory whose name merely contains node_modules
+# @sideeffect Sets _NM_ROOT and repoints SPEC_SEARCH_ROOT at it (saving _ORIG_ROOT)
+#
+_setup_node_modules_tree() {
+  make_temp_dir _NM_ROOT || return 1
+  local path
+  for path in \
+    node_modules/dep/a.unit.spec.sh \
+    pkg/node_modules/b.unit.spec.sh \
+    pkg/tests/c.unit.spec.sh \
+    my_node_modules/dep/d.unit.spec.sh; do
+    mkdir -p "${_NM_ROOT}/${path%/*}"
+    touch "${_NM_ROOT}/${path}"
+  done
+  _ORIG_ROOT="${SPEC_SEARCH_ROOT:-}"
+  # shellcheck disable=SC2034
+  SPEC_SEARCH_ROOT="$_NM_ROOT"
+}
+
+#
+# @description Remove the tree built by _setup_node_modules_tree() and restore SPEC_SEARCH_ROOT
+# @sideeffect unsets _NM_ROOT
+#
+_teardown_node_modules_tree() {
+  # shellcheck disable=SC2034
+  SPEC_SEARCH_ROOT="${_ORIG_ROOT:-}"
+  remove_temp_dir _NM_ROOT
+}
+
 Describe 'T-EXE-ITT: is_test_type()'
   Describe 'When: Normal cases'
     It '[Normal] T-EXE-ITT-01: returns success for all'
@@ -317,6 +349,22 @@ Describe 'expand_spec_glob()'
         When call expand_spec_glob 'runners/libs/__tests__/unit/nonexistent*.spec.sh'
         The output should be blank
         The stderr should be blank
+        The status should be success
+      End
+    End
+
+    # The shared fixture holds no node_modules, so build one in a dedicated tree
+    Describe 'When: Edge cases'
+      Before '_setup_node_modules_tree'
+      After '_teardown_node_modules_tree'
+
+      # Only a path element exactly equal to node_modules is excluded.
+      # The order of the matches is not part of the contract, so it is not asserted
+      It '[Edge] T-EXE-ESG-03: omits matches under direct and nested node_modules only'
+        When call expand_spec_glob '*/*/*.spec.sh'
+        The output should include 'my_node_modules/dep/d.unit.spec.sh'
+        The output should include 'pkg/tests/c.unit.spec.sh'
+        The lines of output should equal 2
         The status should be success
       End
     End

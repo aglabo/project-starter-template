@@ -19,14 +19,6 @@
 !.github/
 !.github/**
 
-# Allow Templates
-!/templates/
-!/templates/**
-
-# Allow profile (organization README)
-!/profile/
-!/profile/**
-
 # Allow other ignore
 !*ignore
 
@@ -61,6 +53,7 @@
 !configs/**/*.mjs
 
 # base configs
+!base
 !base/
 !base/**
 !base/**/*.json

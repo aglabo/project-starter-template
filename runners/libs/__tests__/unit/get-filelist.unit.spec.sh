@@ -27,6 +27,20 @@ _setup_env() {
   : > "${_TEST_DIR}/visible/b.spec.sh"
 }
 
+# Creates the fixtures under _TEST_DIR, without any .gitignore.
+#   a.spec.sh, sub/b.spec.sh       : outside node_modules
+#   node_modules/pkg/c.spec.sh     : directly under node_modules
+#   sub/node_modules/pkg/d.spec.sh : under a nested node_modules
+_setup_node_modules_env() {
+  make_temp_dir _TEST_DIR || return 1
+  mkdir -p "${_TEST_DIR}/node_modules/pkg" "${_TEST_DIR}/sub/node_modules/pkg"
+  touch "${_TEST_DIR}/a.spec.sh" "${_TEST_DIR}/sub/b.spec.sh" \
+    "${_TEST_DIR}/node_modules/pkg/c.spec.sh" "${_TEST_DIR}/sub/node_modules/pkg/d.spec.sh"
+}
+
+# Succeeds when rg is not installed (used by Skip)
+_rg_missing() { ! command -v rg > /dev/null 2>&1; }
+
 # --- Test cases -------------------------------------------------------------
 
 Describe 'T-LIB-GFL: get_filelist()'
@@ -122,6 +136,21 @@ Describe 'T-LIB-GFL: get_filelist()'
       When call get_filelist "$TEMP_DIR" "*.spec.sh" "nonexistent-filter-xyz"
       The output should equal ''
       The status should be success
+    End
+
+    Describe 'Fixture: node_modules tree'
+      Skip if 'rg is not installed' _rg_missing
+      Before '_setup_node_modules_env'
+      After 'remove_temp_dir _TEST_DIR'
+
+      # The order of the files is not part of the contract, so it is not asserted
+      It '[Edge] T-LIB-GFL-14: omits files under direct and nested node_modules without .gitignore'
+        When call get_filelist "${_TEST_DIR}" "*.spec.sh"
+        The output should include './a.spec.sh'
+        The output should include './sub/b.spec.sh'
+        The lines of output should equal 2
+        The status should be success
+      End
     End
   End
 End
