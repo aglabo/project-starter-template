@@ -53,6 +53,7 @@
 !configs/**/*.mjs
 
 # base configs
+!base
 !base/
 !base/**
 !base/**/*.json
